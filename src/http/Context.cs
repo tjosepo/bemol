@@ -1,25 +1,74 @@
+using System.IO;
 using System.Net;
+using System.Text.Json;
 
 namespace Bemol {
     public class Context {
-        private HttpListenerContext ctx;
+        private HttpListenerRequest request;
+
+        private HttpListenerResponse response;
+        private string resultString = "";
 
         public Context(HttpListenerContext ctx) {
-            this.ctx = ctx;
+            request = ctx.Request;
+            response = ctx.Response;
         }
 
-        public void Result(string resultString) {
-            HttpListenerRequest request = ctx.Request;
-            // Obtain a response object.
-            HttpListenerResponse response = ctx.Response;
-            // Construct a response.
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(resultString);
-            // Get a response stream and write the response to it.
-            response.ContentLength64 = buffer.Length;
-            System.IO.Stream output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            // You must close the output stream.
-            output.Close();
+        public string Body() {
+            System.IO.Stream stream = request.InputStream;
+            var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
+        }
+
+        public T BodyAsClass<T>() {
+            string json = Body();
+            return JsonSerializer.Deserialize<T>(json);
+        }
+
+        public Cookie Cookie(string name) {
+            return request.Cookies[name];
+        }
+
+        public Context Result(string resultString) {
+            this.resultString = resultString;
+            return this;
+        }
+
+        public string ResultString() {
+            return resultString;
+        }
+
+        public Context ContentType(string contentType) {
+            response.ContentType = contentType;
+            return this;
+        }
+
+        public Context Status(int statusCode) {
+            response.StatusCode = statusCode;
+            return this;
+        }
+
+        public int Status() {
+            return response.StatusCode;
+        }
+
+        public Context Cookie(string name, string value) {
+            var cookie = new Cookie(name, value, "/");
+            response.SetCookie(cookie);
+            return this;
+        }
+
+        public Context Cookie(Cookie cookie) {
+            response.SetCookie(cookie);
+            return this;
+        }
+
+        public Context Html(string html) {
+            return Result(html).ContentType("text/html");
+        }
+
+        public Context Json(object obj) {
+            return Result(JsonSerializer.Serialize(obj)).ContentType("application/json");
         }
     }
 }

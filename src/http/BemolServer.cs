@@ -11,8 +11,8 @@ namespace Bemol {
         private HttpListener listener;
         private IDictionary handlers;
 
-        public void Start() {
-            port = 7000;
+        public void Start(int port) {
+            this.port = port;
 
             listener = new HttpListener();
             handlers = new Dictionary<(string, string), Handler>();
@@ -26,21 +26,30 @@ namespace Bemol {
                         Thread.Yield();
                         continue;
                     }
-                    var ctx = listener.GetContext();
-                    var method = ctx.Request.HttpMethod;
-                    var path = ctx.Request.RawUrl;
-                    var handler = (Handler)handlers[(method, path)];
+                    var context = listener.GetContext();
+                    var method = context.Request.HttpMethod;
+                    var path = context.Request.RawUrl;
+                    var handler = handlers[(method, path)] as Handler;
                     if (handler == null) {
-                        handler = (ctx) => ctx.Result("404 Not found");
+                        handler = (ctx) => ctx.Status(404).Result("404 Not found");
                     }
-                    handler(new Context(ctx));
+                    Context ctx = new Context(context);
+                    handler(ctx);
+
+                    var response = context.Response;
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(ctx.ResultString());
+                    response.ContentLength64 = buffer.Length;
+                    System.IO.Stream output = response.OutputStream;
+                    output.Write(buffer, 0, buffer.Length);
+                    output.Close();
                 }
             });
             th.Start();
         }
 
         public void addHandler(string method, string path, Handler handler) {
-            listener.Prefixes.Add($"http://{host}:{port}{path}");
+            if (!listener.Prefixes.Contains($"http://{host}:{port}{path}"))
+                listener.Prefixes.Add($"http://{host}:{port}{path}");
             handlers.Add((method, path), handler);
         }
     }
