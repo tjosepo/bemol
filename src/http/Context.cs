@@ -5,7 +5,6 @@ using System.Text.Json;
 namespace Bemol {
     public class Context {
         private HttpListenerRequest request;
-
         private HttpListenerResponse response;
         private string resultString = "";
 

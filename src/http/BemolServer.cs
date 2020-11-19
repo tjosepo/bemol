@@ -7,15 +7,16 @@ using System.Threading;
 namespace Bemol {
     class BemolServer {
         private int port;
-        private string host = "localhost";
+        private string host;
         private HttpListener listener;
         private IDictionary handlers;
 
-        public void Start(int port) {
+        public void Start(string host, int port) {
+            this.host = host;
             this.port = port;
 
             listener = new HttpListener();
-            handlers = new Dictionary<(string, string), Handler>();
+            handlers = new Dictionary<(HandlerType, string), Handler>();
 
             Thread th = new Thread(() => {
                 listener.Start();
@@ -26,17 +27,20 @@ namespace Bemol {
                         Thread.Yield();
                         continue;
                     }
+
                     var context = listener.GetContext();
-                    var method = context.Request.HttpMethod;
+                    var type = Enum.Parse<HandlerType>(context.Request.HttpMethod);
                     var path = context.Request.RawUrl;
-                    var handler = handlers[(method, path)] as Handler;
+                    var handler = handlers[(type, path)] as Handler;
+
                     if (handler == null) {
-                        handler = (ctx) => ctx.Status(404).Result("404 Not found");
+                        handler = (ctx) => ctx.Result("404 Not found").Status(404);
                     }
+
                     Context ctx = new Context(context);
                     handler(ctx);
 
-                    var response = context.Response;
+                    HttpListenerResponse response = context.Response;
                     byte[] buffer = System.Text.Encoding.UTF8.GetBytes(ctx.ResultString());
                     response.ContentLength64 = buffer.Length;
                     System.IO.Stream output = response.OutputStream;
@@ -47,10 +51,10 @@ namespace Bemol {
             th.Start();
         }
 
-        public void addHandler(string method, string path, Handler handler) {
+        public void addHandler(HandlerType type, string path, Handler handler) {
             if (!listener.Prefixes.Contains($"http://{host}:{port}{path}"))
                 listener.Prefixes.Add($"http://{host}:{port}{path}");
-            handlers.Add((method, path), handler);
+            handlers.Add((type, path), handler);
         }
     }
 }
