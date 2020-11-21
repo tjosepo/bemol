@@ -2,7 +2,7 @@ using System.IO;
 using System.Net;
 using System.Text.Json;
 
-namespace Bemol {
+namespace Bemol.Http {
     public class Context {
         private HttpListenerRequest request;
         private HttpListenerResponse response;
@@ -12,6 +12,10 @@ namespace Bemol {
             request = ctx.Request;
             response = ctx.Response;
         }
+
+        // ********************************************************************************************
+        // REQUEST
+        // ********************************************************************************************
 
         public string Body() {
             System.IO.Stream stream = request.InputStream;
@@ -24,9 +28,17 @@ namespace Bemol {
             return JsonSerializer.Deserialize<T>(json);
         }
 
+        public string PathParam(string key) {
+            return key;
+        }
+
         public Cookie Cookie(string name) {
             return request.Cookies[name];
         }
+
+        // ********************************************************************************************
+        // RESPONSE
+        // ********************************************************************************************
 
         public Context Result(string resultString) {
             this.resultString = resultString;

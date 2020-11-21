@@ -3,44 +3,49 @@ using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using Bemol.Core;
 
-namespace Bemol {
+namespace Bemol.Http {
     class BemolServer {
-        private int port;
-        private string host;
+        private BemolConfig config;
+        public int port { set; get; } = 7000;
+        public string host { set; get; } = "localhost";
+        public bool started { set; get; } = false;
+        private PathMatcher matcher = new PathMatcher();
         private HttpListener listener;
         private IDictionary handlers;
 
-        public void Start(string host, int port) {
-            this.host = host;
-            this.port = port;
+        public BemolServer(BemolConfig config) {
+            this.config = config;
+        }
 
+        public void Start() {
             listener = new HttpListener();
             handlers = new Dictionary<(HandlerType, string), Handler>();
 
             Thread th = new Thread(() => {
                 listener.Start();
-                Console.WriteLine($"Listening on http://{host}:{port}/");
+                Console.Clear();
+                Console.WriteLine($"Listening on http://{host}:{port}{config.contextPath}");
+                listener.Prefixes.Add($"http://{host}:{port}{config.contextPath}");
 
                 while (true) {
-                    if (listener.Prefixes.Count == 0) {
-                        Thread.Yield();
-                        continue;
-                    }
-
                     var context = listener.GetContext();
                     var type = Enum.Parse<HandlerType>(context.Request.HttpMethod);
-                    var path = context.Request.RawUrl;
-                    var handler = handlers[(type, path)] as Handler;
+                    string path = context.Request.RawUrl;
+                    var handlers = matcher.FindEntries(type, path);
+                    var entry = handlers.FindLast(entry => true);
 
-                    if (handler == null) {
-                        handler = (ctx) => ctx.Result("404 Not found").Status(404);
+                    if (entry == null) {
+                        entry = new HandlerEntry(HandlerType.INVALID, "", config.ignoreTrailingSlashes, (ctx) => ctx.Result("404 Not found").Status(404));
                     }
 
                     Context ctx = new Context(context);
-                    handler(ctx);
+                    entry.handler(ctx);
 
                     HttpListenerResponse response = context.Response;
+
+                    if (config.enableCorsForAllOrigins) response.AppendHeader("Access-Control-Allow-Origin", "*");
                     byte[] buffer = System.Text.Encoding.UTF8.GetBytes(ctx.ResultString());
                     response.ContentLength64 = buffer.Length;
                     System.IO.Stream output = response.OutputStream;
@@ -52,9 +57,7 @@ namespace Bemol {
         }
 
         public void addHandler(HandlerType type, string path, Handler handler) {
-            if (!listener.Prefixes.Contains($"http://{host}:{port}{path}"))
-                listener.Prefixes.Add($"http://{host}:{port}{path}");
-            handlers.Add((type, path), handler);
+            matcher.Add(new HandlerEntry(type, path, config.ignoreTrailingSlashes, handler));
         }
     }
 }
