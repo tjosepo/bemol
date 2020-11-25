@@ -26,13 +26,17 @@ namespace Bemol.Http {
     }
 
     public class PathMatcher {
-        private Dictionary<HandlerType, List<HandlerEntry>> handlerEntries = new Dictionary<HandlerType, List<HandlerEntry>>();
+        private Dictionary<HandlerType, List<HandlerEntry>> handlerEntries;
+
+        public PathMatcher() {
+            // TODO: There probably exists a more clever way to initialize this dictionary.
+            handlerEntries = new Dictionary<HandlerType, List<HandlerEntry>>();
+            foreach (var type in System.Enum.GetValues<HandlerType>()) {
+                handlerEntries.Add(type, new List<HandlerEntry>());
+            }
+        }
 
         public void Add(HandlerEntry entry) {
-            if (!handlerEntries.ContainsKey(entry.type)) {
-                handlerEntries.Add(entry.type, new List<HandlerEntry>());
-            }
-
             handlerEntries[entry.type].Add(entry);
         }
 
