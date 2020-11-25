@@ -27,11 +27,16 @@ namespace Bemol.Core {
             var matchRegexSuffix = (ignoreTrailingSlash) ? "/?" : (path.EndsWith("/")) ? "/" : "";
             matchRegex = ($"^/{String.Join('/', segmentsRegex)}{matchRegexSuffix}$");
 
-            pathParamRegex = matchRegex.Replace("[^/]+", "([^/]+?)");
+            pathParamRegex = matchRegex.Replace("[^/]+?", "([^/]+?)");
         }
 
-        public bool Matches(string url) {
-            return Regex.Match(url, matchRegex).Success;
+        public bool Matches(string url) => Regex.Match(url, matchRegex).Success;
+
+        public Dictionary<string, string> ExtractPathParams(string url) {
+            return pathParamNames.ToDictionary(
+                (key) => key,
+                (value) => Regex.Match(url, pathParamRegex).Groups.Values.Last().Value
+            );
         }
     }
 
@@ -41,31 +46,21 @@ namespace Bemol.Core {
         public class Normal : PathSegment {
             public string content { set; get; }
 
-            public Normal(string content) {
-                this.content = content;
-            }
+            public Normal(string content) => this.content = content;
 
-            override public string AsRegexString() {
-                return content;
-            }
+            override public string AsRegexString() => content;
         }
 
         public class Parameter : PathSegment {
             public string name { set; get; }
 
-            public Parameter(string name) {
-                this.name = name;
-            }
+            public Parameter(string name) => this.name = name;
 
-            override public string AsRegexString() {
-                return "[^/]+?";     // Accepting everything except slash
-            }
+            override public string AsRegexString() => "[^/]+?";     // Accepting everything except slash
         }
 
         public class Wildcard : PathSegment {
-            override public string AsRegexString() {
-                return ".*?";    // Accept everything
-            }
+            override public string AsRegexString() => ".*?";    // Accept everything
         }
     }
 }

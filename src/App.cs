@@ -8,13 +8,9 @@ namespace Bemol {
 
         BemolServer server;
 
-        public App() {
-            server = new BemolServer(config);
-        }
+        public App() => server = new BemolServer(config);
 
-        public App(Action<BemolConfig> config) : this() {
-            config(this.config);
-        }
+        public App(Action<BemolConfig> config) : this() => config(this.config);
 
         /// <summary> Starts the application instance on the default port (7000). </summary>
         public App Start() {
@@ -54,6 +50,7 @@ namespace Bemol {
         // ********************************************************************************************
 
         public App Error(int statusCode, Handler handler) {
+            server.AddErrorHandler(statusCode, handler);
             return this;
         }
 
@@ -80,9 +77,7 @@ namespace Bemol {
         }
 
         /// <summary> Adds a BEFORE request handler for all routes in the instance. </summary>
-        public App Before(Handler handler) {
-            return Before("*", handler);
-        }
+        public App Before(Handler handler) => Before("*", handler);
 
         /// <summary> Adds an AFTER request handler for the specified path to the instance. </summary>
         public App After(string path, Handler handler) {
@@ -91,8 +86,6 @@ namespace Bemol {
         }
 
         /// <summary> Adds an AFTER request handler for all routes in the instance. </summary>
-        public App After(Handler handler) {
-            return After("*", handler);
-        }
+        public App After(Handler handler) => After("*", handler);
     }
 }

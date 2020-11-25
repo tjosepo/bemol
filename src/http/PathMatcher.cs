@@ -20,9 +20,9 @@ namespace Bemol.Http {
             return pathParser.Matches(requestUri);
         }
 
-        /* public string ExtractPathParams(string requestUri) {
+        public Dictionary<string, string> ExtractPathParams(string requestUri) {
             return pathParser.ExtractPathParams(requestUri);
-        } */
+        }
     }
 
     public class PathMatcher {

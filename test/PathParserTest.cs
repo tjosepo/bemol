@@ -68,5 +68,23 @@ namespace BemolTest {
             var parser = new PathParser("/foo/*", false);
             Assert.False(parser.Matches("/foo"));
         }
+
+        [Theory]
+        [InlineData("/:foo", "foo", "/bar", "bar")]
+        [InlineData("/:foo/bar", "foo", "/baz/bar", "baz")]
+        [InlineData("/foo/:bar", "bar", "/foo/baz", "baz")]
+        [InlineData("/*/:foo", "foo", "/foobarbaz/baz", "baz")]
+        public void ExtractPathParams_FindsMatch(string path, string key, string url, string expected) {
+            var parser = new PathParser(path, false);
+            var pathParamDict = parser.ExtractPathParams(url);
+            Assert.Equal(expected, pathParamDict[key]);
+        }
+
+        [Fact]
+        public void ExtractPathParams_NoMatch() {
+            var parser = new PathParser("/:foo", false);
+            var pathParamDict = parser.ExtractPathParams("/bar");
+            Assert.Throws<System.Collections.Generic.KeyNotFoundException>(() => pathParamDict["baz"]);
+        }
     }
 }
