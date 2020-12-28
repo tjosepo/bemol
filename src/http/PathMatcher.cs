@@ -49,6 +49,5 @@ namespace Bemol.Http {
             if (entry.Path == requestPath) return true;
             else return entry.Matches(requestPath);
         }
-
     }
 }

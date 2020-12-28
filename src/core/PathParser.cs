@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace Bemol.Core {
     public class PathParser {
-        private List<string> pathParamNames;
-        private string matchRegex;
-        private string pathParamRegex;
+        private List<string> PathParamNames;
+        private string MatchRegex;
+        private string PathParamRegex;
 
         public PathParser(string path, bool ignoreTrailingSlash) {
             var segments = path.Split("/")
@@ -19,23 +19,23 @@ namespace Bemol.Core {
                     }).ToList();
 
 
-            pathParamNames = segments
+            PathParamNames = segments
                     .OfType<PathSegment.Parameter>()
                     .Select(segment => segment.name).ToList();
 
             var segmentsRegex = segments.Select(segment => segment.AsRegexString());
             var matchRegexSuffix = (ignoreTrailingSlash) ? "/?" : (path.EndsWith("/")) ? "/" : "";
-            matchRegex = ($"^/{String.Join('/', segmentsRegex)}{matchRegexSuffix}$");
+            MatchRegex = ($"^/{String.Join('/', segmentsRegex)}{matchRegexSuffix}$");
 
-            pathParamRegex = matchRegex.Replace("[^/]+?", "([^/]+?)");
+            PathParamRegex = MatchRegex.Replace("[^/]+?", "([^/]+?)");
         }
 
-        public bool Matches(string url) => Regex.Match(url, matchRegex).Success;
+        public bool Matches(string url) => Regex.Match(url, MatchRegex).Success;
 
         public Dictionary<string, string> ExtractPathParams(string url) {
-            return pathParamNames.ToDictionary(
+            return PathParamNames.ToDictionary(
                 (key) => key,
-                (value) => Regex.Match(url, pathParamRegex).Groups.Values.Last().Value
+                (value) => Regex.Match(url, PathParamRegex).Groups.Values.Last().Value
             );
         }
     }
