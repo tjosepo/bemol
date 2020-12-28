@@ -4,49 +4,49 @@ using System.Collections.Generic;
 
 namespace Bemol.Http {
     public class HandlerEntry {
-        public HandlerType type { set; get; }
-        public string path { set; get; }
-        public Handler handler { set; get; }
-        private PathParser pathParser;
+        public HandlerType Type { set; get; }
+        public string Path { set; get; }
+        public Handler Handler { set; get; }
+        private PathParser PathParser;
 
         public HandlerEntry(HandlerType type, string path, bool ignoreTrailingSlashes, Handler handler) {
-            this.type = type;
-            this.path = path;
-            this.handler = handler;
-            pathParser = new PathParser(path, ignoreTrailingSlashes);
+            Type = type;
+            Path = path;
+            Handler = handler;
+            PathParser = new PathParser(path, ignoreTrailingSlashes);
         }
 
         public bool Matches(string requestUri) {
-            return pathParser.Matches(requestUri);
+            return PathParser.Matches(requestUri);
         }
 
         public Dictionary<string, string> ExtractPathParams(string requestUri) {
-            return pathParser.ExtractPathParams(requestUri);
+            return PathParser.ExtractPathParams(requestUri);
         }
     }
 
     public class PathMatcher {
-        private Dictionary<HandlerType, List<HandlerEntry>> handlerEntries;
+        private Dictionary<HandlerType, List<HandlerEntry>> HandlerEntries;
 
         public PathMatcher() {
             // TODO: There probably exists a more clever way to initialize this dictionary.
-            handlerEntries = new Dictionary<HandlerType, List<HandlerEntry>>();
+            HandlerEntries = new Dictionary<HandlerType, List<HandlerEntry>>();
             foreach (var type in System.Enum.GetValues<HandlerType>()) {
-                handlerEntries.Add(type, new List<HandlerEntry>());
+                HandlerEntries.Add(type, new List<HandlerEntry>());
             }
         }
 
         public void Add(HandlerEntry entry) {
-            handlerEntries[entry.type].Add(entry);
+            HandlerEntries[entry.Type].Add(entry);
         }
 
         public List<HandlerEntry> FindEntries(HandlerType type, string requestUri) {
-            return handlerEntries[type].Where(entry => Match(entry, requestUri)).ToList();
+            return HandlerEntries[type].Where(entry => Match(entry, requestUri)).ToList();
         }
 
         private bool Match(HandlerEntry entry, string requestPath) {
-            if (entry.path == "*") return true;
-            if (entry.path == requestPath) return true;
+            if (entry.Path == "*") return true;
+            if (entry.Path == requestPath) return true;
             else return entry.Matches(requestPath);
         }
 

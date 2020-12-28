@@ -6,14 +6,14 @@ namespace Bemol.Http {
 
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
-        public Dictionary<string, string> pathParamDict { get; set; }
-        internal HttpListenerRequest request;
-        internal HttpListenerResponse response;
-        private string resultString = "";
+        public Dictionary<string, string> PathParamDict { get; set; }
+        internal HttpListenerRequest Request;
+        internal HttpListenerResponse Response;
+        private string ResultString = "";
 
         public Context(HttpListenerContext ctx) {
-            request = ctx.Request;
-            response = ctx.Response;
+            Request = ctx.Request;
+            Response = ctx.Response;
         }
 
         // ********************************************************************************************
@@ -22,7 +22,7 @@ namespace Bemol.Http {
 
         /// <summary> Gets the request body as a <paramref name="string"/>. </summary>
         public string Body() {
-            System.IO.Stream stream = request.InputStream;
+            System.IO.Stream stream = Request.InputStream;
             var reader = new System.IO.StreamReader(stream);
             return reader.ReadToEnd();
         }
@@ -35,18 +35,18 @@ namespace Bemol.Http {
         }
 
         public string PathParam(string key) {
-            if (!pathParamDict.ContainsKey(key)) throw new HttpResponseException(HttpStatusCode.InternalServerError, $"'{key}' is not a valid path-param for '{Path()}'.");
-            return pathParamDict[key];
+            if (!PathParamDict.ContainsKey(key)) throw new InternalServerErrorException($"'{key}' is not a valid path-param for '{Path()}'.");
+            return PathParamDict[key];
         }
 
         /// <summary> Gets a request cookie by name, or null. <summary>
-        public Cookie Cookie(string name) => request.Cookies[name];
+        public Cookie Cookie(string name) => Request.Cookies[name];
 
         /// <summary> Gets the request method. <summary>
-        public string Method() => request.HttpMethod;
+        public string Method() => Request.HttpMethod;
 
         /// <summary> Gets the request absolute path. </summary>
-        public string Path() => request.Url.AbsolutePath;
+        public string Path() => Request.Url.AbsolutePath;
 
         // ********************************************************************************************
         // RESPONSE
@@ -54,44 +54,44 @@ namespace Bemol.Http {
 
         /// <summary> Set a <paramref name="string"/> result that will be sent to the client. </summary>
         public Context Result(string resultString) {
-            this.resultString = resultString;
+            ResultString = resultString;
             return this;
         }
 
         /// <summary> Get the string result that will be sent to the client </summary>
-        public string ResultString() => resultString;
+        public string Result() => ResultString;
 
         /// <summary> Sets response content type to specified <paramref name="string"> value. </summary>
         public Context ContentType(string contentType) {
-            response.ContentType = contentType;
+            Response.ContentType = contentType;
             return this;
         }
 
         /// <summary> Sets response header by name and value. </summary>
         public Context Header(string name, string value) {
-            response.AddHeader(name, value);
+            Response.AddHeader(name, value);
             return this;
         }
 
         /// <summary> Sets the response status. </summary>
         public Context Status(int statusCode) {
-            response.StatusCode = statusCode;
+            Response.StatusCode = statusCode;
             return this;
         }
 
         /// <summary> Gets the response status. </summary>
-        public int Status() => response.StatusCode;
+        public int Status() => Response.StatusCode;
 
         /// <summary> Sets a cookie with name and value. </summary>
         public Context Cookie(string name, string value) {
             var cookie = new Cookie(name, value, "/");
-            response.SetCookie(cookie);
+            Response.SetCookie(cookie);
             return this;
         }
 
         /// <summary> Sets a cookie. </summary>
         public Context Cookie(Cookie cookie) {
-            response.SetCookie(cookie);
+            Response.SetCookie(cookie);
             return this;
         }
 

@@ -1,15 +1,13 @@
-using System;
-
 using System.Collections.Generic;
 
 namespace Bemol.Http {
     public class ErrorMapper {
-        private Dictionary<int, Handler> errorHandlerMap = new Dictionary<int, Handler>();
+        private Dictionary<int, Handler> ErrorHandlerMap = new Dictionary<int, Handler>();
 
         public void Handle(int statusCode, Context ctx) {
-            if (!errorHandlerMap.ContainsKey(statusCode)) return;
-            errorHandlerMap[statusCode](ctx);
+            if (!ErrorHandlerMap.ContainsKey(statusCode)) return;
+            ErrorHandlerMap[statusCode](ctx);
         }
-        public void Add(int statusCode, Handler handler) => errorHandlerMap.Add(statusCode, handler);
+        public void Add(int statusCode, Handler handler) => ErrorHandlerMap.Add(statusCode, handler);
     }
 }
