@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace Bemol.Core {
     public class PathParser {
-        private List<string> PathParamNames;
-        private string MatchRegex;
-        private string PathParamRegex;
+        private readonly List<string> PathParamNames;
+        private readonly string MatchRegex;
+        private readonly string PathParamRegex;
 
         public PathParser(string path, bool ignoreTrailingSlash) {
             var segments = path.Split("/")
@@ -44,7 +44,7 @@ namespace Bemol.Core {
         public abstract string AsRegexString();
 
         public class Normal : PathSegment {
-            public string content { set; get; }
+            public readonly string content;
 
             public Normal(string content) => this.content = content;
 
@@ -52,7 +52,7 @@ namespace Bemol.Core {
         }
 
         public class Parameter : PathSegment {
-            public string name { set; get; }
+            public readonly string name;
 
             public Parameter(string name) => this.name = name;
 

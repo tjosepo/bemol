@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using Bemol.Core;
 using Bemol.Http.Util;
+using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
     class BemolServer {
@@ -28,8 +29,10 @@ namespace Bemol.Http {
                 Console.WriteLine($"Listening on http://{Host}:{Port}{Config.ContextPath}");
 
                 while (Started) {
-                    var contextRaw = listener.GetContext();
-                    var ctx = new Context(contextRaw);
+                    var rawCtx = listener.GetContext();
+                    var ctx = new Context(rawCtx);
+
+                    ctx.ContentType(Config.DefaultContentType);
 
                     TryBeforeHandlers(ctx);
                     TryEndpointHandler(ctx);

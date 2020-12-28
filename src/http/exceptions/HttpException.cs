@@ -1,7 +1,7 @@
-namespace Bemol.Http {
+namespace Bemol.Http.Exceptions {
     public class HttpException : System.Exception {
         public readonly int Status;
-      public HttpException(int status, string message) : base(message) {
+        public HttpException(int status, string message) : base(message) {
             Status = status;
         }
     }

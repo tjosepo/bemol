@@ -1,6 +1,7 @@
 using System.Net;
 using System.Collections.Generic;
 using System.Text.Json;
+using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
 
