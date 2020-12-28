@@ -2,7 +2,7 @@ using Xunit;
 using Bemol.Core;
 
 namespace BemolTest {
-    public class ContextPathTest {
+    public class PathParserTest {
 
         [Fact]
         public void Matches_Normal_FindsMatch() {

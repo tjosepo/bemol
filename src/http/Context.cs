@@ -1,4 +1,3 @@
-using System;
 using System.Net;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -8,8 +7,8 @@ namespace Bemol.Http {
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
         public Dictionary<string, string> pathParamDict { get; set; }
-        private HttpListenerRequest request;
-        private HttpListenerResponse response;
+        internal HttpListenerRequest request;
+        internal HttpListenerResponse response;
         private string resultString = "";
 
         public Context(HttpListenerContext ctx) {
@@ -36,7 +35,7 @@ namespace Bemol.Http {
         }
 
         public string PathParam(string key) {
-            if (!pathParamDict.ContainsKey(key)) throw new HttpStatusException(HttpStatusCode.InternalServerError, $"'{key}' is not a valid path-param for '{Path()}'.");
+            if (!pathParamDict.ContainsKey(key)) throw new HttpResponseException(HttpStatusCode.InternalServerError, $"'{key}' is not a valid path-param for '{Path()}'.");
             return pathParamDict[key];
         }
 
