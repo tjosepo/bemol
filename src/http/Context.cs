@@ -1,6 +1,9 @@
 using System.Net;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
+using System.IO;
+
 using Bemol.Core;
 using Bemol.Http.Exceptions;
 
@@ -9,9 +12,9 @@ namespace Bemol.Http {
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
         public Dictionary<string, string> PathParamDict { get; set; }
-        internal HttpListenerRequest Request;
+        public HttpListenerRequest Request;
         internal HttpListenerResponse Response;
-        private string ResultString = "";
+        private byte[] ByteArray;
 
         public Context(HttpListenerContext ctx) {
             Request = ctx.Request;
@@ -24,16 +27,34 @@ namespace Bemol.Http {
 
         /// <summary> Gets the request body as a <paramref name="string"/>. </summary>
         public string Body() {
-            System.IO.Stream stream = Request.InputStream;
-            var reader = new System.IO.StreamReader(stream);
+            Stream stream = Request.InputStream;
+            var reader = new StreamReader(stream);
             return reader.ReadToEnd();
         }
 
-        /// <summary> Maps a JSON body to a class using JsonSerializer. </summary>
+        public byte[] BodyAsBytes() {
+            using (MemoryStream ms = new MemoryStream()) {
+                Request.InputStream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary> 
+        /// Maps a JSON body to a class using JsonSerializer. 
+        /// Throws BadRequestException if the object cannot be mapped. 
+        /// </summary>
         /// <returns> The mapped object </returns>
         public T BodyAsClass<T>() {
             string json = Body();
-            return JsonSerializer.Deserialize<T>(json);
+            try {
+                return JsonSerializer.Deserialize<T>(json);
+            } catch (JsonException) {
+                throw new BadRequestException();
+            }
+        }
+
+        public string FormParam(string key) {
+            return "";
         }
 
         public string PathParam(string key) {
@@ -55,13 +76,22 @@ namespace Bemol.Http {
         // ********************************************************************************************
 
         /// <summary> Set a <paramref name="string"/> result that will be sent to the client. </summary>
-        public Context Result(string resultString) {
-            ResultString = resultString;
+        public Context Result(string resultString) => Result(Encoding.UTF8.GetBytes(resultString));
+
+        /// <summary> Get the string result that will be sent to the client. </summary>
+        public string ResultString() => Encoding.UTF8.GetString(ByteArray);
+
+        /// <summary> Set an array of bytes result that will be sent to the client. </summary>
+        public Context Result(byte[] byteArray) {
+            ByteArray = byteArray;
             return this;
         }
 
-        /// <summary> Get the string result that will be sent to the client </summary>
-        public string Result() => ResultString;
+        /// <summary> Get the array of byte result that will be sent to the client. </summary>
+        public byte[] ResultBytes() => ByteArray;
+
+        /// <summary> Get the array of byte result that will be sent to the client. </summary>
+        public Stream ResultStream() => Response.OutputStream;
 
         /// <summary> Sets response content type to specified <paramref name="string"> value. </summary>
         public Context ContentType(string contentType) {

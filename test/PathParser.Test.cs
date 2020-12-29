@@ -1,7 +1,7 @@
 using Xunit;
 using Bemol.Core;
 
-namespace BemolTest {
+namespace Bemol.Test {
     public class PathParserTest {
 
         [Fact]

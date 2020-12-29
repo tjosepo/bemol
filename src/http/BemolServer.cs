@@ -31,26 +31,29 @@ namespace Bemol.Http {
                 while (Started) {
                     var rawCtx = listener.GetContext();
                     var ctx = new Context(rawCtx);
-
-                    ctx.ContentType(Config.DefaultContentType);
-
-                    TryBeforeHandlers(ctx);
-                    TryEndpointHandler(ctx);
-                    TryErrorHandler(ctx);
-                    TryAfterHandlers(ctx);
-
-                    if (Config.EnableCorsForAllOrigins) ctx.Header("Access-Control-Allow-Origin", "*");
+                    HandleRequest(ctx);
                     SendResponse(ctx);
                 }
             }).Start();
         }
 
-        public void AddErrorHandler(int statusCode, Handler handler) {
-            ErrorMapper.Add(statusCode, handler);
+        public void HandleRequest(Context ctx) {
+            ctx.ContentType(Config.DefaultContentType);
+
+            TryBeforeHandlers(ctx);
+            TryEndpointHandler(ctx);
+            TryErrorHandler(ctx);
+            TryAfterHandlers(ctx);
+
+            if (Config.EnableCorsForAllOrigins) ctx.Header("Access-Control-Allow-Origin", "*");
         }
 
         public void AddHandler(HandlerType type, string path, Handler handler) {
             Matcher.Add(new HandlerEntry(type, path, Config.IgnoreTrailingSlashes, handler));
+        }
+
+        public void AddErrorHandler(int statusCode, Handler handler) {
+            ErrorMapper.Add(statusCode, handler);
         }
 
         private void TryWithExceptionMapper(Context ctx, Action func) {
@@ -64,10 +67,6 @@ namespace Bemol.Http {
             });
         });
 
-        private void TryErrorHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
-            ErrorMapper.Handle(ctx.Status(), ctx);
-        });
-
         private void TryEndpointHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
             var type = Enum.Parse<HandlerType>(ctx.Method());
             var entries = Matcher.FindEntries(type, ctx.Path());
@@ -78,6 +77,10 @@ namespace Bemol.Http {
             entry.Handler(ContextUtil.Update(ctx, entry));
         });
 
+        private void TryErrorHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
+            ErrorMapper.Handle(ctx.Status(), ctx);
+        });
+
         private void TryAfterHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
             var afterEntries = Matcher.FindEntries(HandlerType.AFTER, ctx.Path());
             afterEntries.ForEach(entry => {
@@ -86,11 +89,10 @@ namespace Bemol.Http {
         });
 
         private void SendResponse(Context ctx) {
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(ctx.Result());
-            ctx.Response.ContentLength64 = buffer.Length;
-            System.IO.Stream output = ctx.Response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
+            var byteArray = ctx.ResultBytes();
+            var resultStream = ctx.ResultStream();
+            resultStream.Write(byteArray);
+            resultStream.Close();
             Console.WriteLine($"[{ctx.Method()}] {ctx.Status()} {ctx.Path()}");
         }
     }

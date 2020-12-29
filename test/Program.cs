@@ -1,6 +1,5 @@
 using Bemol;
-using System.Collections.Generic;
-using Bemol.DotLiquid;
+using System;
 
 public class Program {
     public static void Main() {
@@ -8,29 +7,13 @@ public class Program {
             config.DefaultContentType = "application/json";
         }).Start();
 
-        var list = new UsersList();
-        list.Users.Add(new User("Johnny", 20));
-        list.Users.Add(new User("Bob", 23));
-
-
         app.Get("/", ctx => {
-            ctx.Render("/index.liquid", list);
+            ctx.Render("/index.liquid", new { });
         });
-    }
-}
 
-
-class UsersList {
-    public List<User> Users { set; get; } = new List<User>();
-}
-
-class User : Drop {
-    public string Name { get; }
-    public int Age { set; get; }
-    public int BirthPlace { set; get; } = 99;
-
-    public User(string name, int age) {
-        Name = name;
-        Age = age;
+        app.Post("/", ctx => {
+            var body = ctx.Body();
+            ctx.Result(body);
+        });
     }
 }
