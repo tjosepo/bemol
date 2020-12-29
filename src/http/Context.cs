@@ -1,20 +1,27 @@
 using System.Net;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Text;
 using System.Text.Json;
 using System.IO;
 
 using Bemol.Core;
+using Bemol.Http.Util;
 using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
 
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
-        public Dictionary<string, string> PathParamDict { get; set; }
-        public HttpListenerRequest Request;
+
+        internal HttpListenerRequest Request;
         internal HttpListenerResponse Response;
-        private byte[] ByteArray;
+
+        private Dictionary<string, string> Form;
+        public Dictionary<string, string> PathParamDict { get; set; }
+
+        private byte[] BodyArray;
+        private byte[] ResultArray;
 
         public Context(HttpListenerContext ctx) {
             Request = ctx.Request;
@@ -27,21 +34,23 @@ namespace Bemol.Http {
 
         /// <summary> Gets the request body as a <paramref name="string"/>. </summary>
         public string Body() {
-            Stream stream = Request.InputStream;
-            var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
+            var bytes = (BodyArray != null) ? BodyArray : BodyAsBytes();
+            return Encoding.UTF8.GetString(bytes);
         }
 
+        /// <summary> Gets the request body as a an array of bytes. </summary>
         public byte[] BodyAsBytes() {
+            if (BodyArray != null) return BodyArray;
             using (MemoryStream ms = new MemoryStream()) {
                 Request.InputStream.CopyTo(ms);
-                return ms.ToArray();
+                BodyArray = ms.ToArray();
+                return BodyArray;
             }
         }
 
         /// <summary> 
         /// Maps a JSON body to a class using JsonSerializer. 
-        /// Throws BadRequestException if the object cannot be mapped. 
+        /// Throws <c>BadRequestException</c> if the object cannot be mapped. 
         /// </summary>
         /// <returns> The mapped object </returns>
         public T BodyAsClass<T>() {
@@ -52,20 +61,43 @@ namespace Bemol.Http {
                 throw new BadRequestException();
             }
         }
-
+        /// <summary> Gets a form param if it exists, else null. </summary>
         public string FormParam(string key) {
-            return "";
+            if (Form == null) Form = ContextUtil.SplitKeyValueStringAndGroupByKey(Body());
+            return Form[key];
         }
 
+        /// <summary> Gets a form param if it exists, else a default value (null if not specified explicitly).</summary>
+        public string FormParam(string key, string defaultValue = null) {
+            var value = FormParam(key);
+            return (value != null) ? value : defaultValue;
+        }
+
+        /// <summary> 
+        /// Gets a path param by name. 
+        /// Throws <c>InternalServerErrorException</c> if the path param cannot be found. 
+        /// </summary>
         public string PathParam(string key) {
             if (!PathParamDict.ContainsKey(key)) throw new InternalServerErrorException($"'{key}' is not a valid path-param for '{Path()}'.");
             return PathParamDict[key];
         }
 
-        /// <summary> Gets a request cookie by name, or null. <summary>
+        /// <summary> Gets the request content length. </summary>
+        public long ContentLength() => Request.ContentLength64;
+
+        /// <summary> Gets the request content type, or null. </summary>
+        public string ContentType() => Request.ContentType;
+
+        /// <summary> Gets a request cookie by name, or null. </summary>
         public Cookie Cookie(string name) => Request.Cookies[name];
 
-        /// <summary> Gets the request method. <summary>
+        /// <summary> Gets a request header by name, or null. </summary>
+        public string Header(string header) => HeaderMap()[header];
+
+        /// <summary> Gets a map with all the header keys and values on the request. </summary>
+        public NameValueCollection HeaderMap() => Request.Headers;
+
+        /// <summary> Gets the request method. </summary>
         public string Method() => Request.HttpMethod;
 
         /// <summary> Gets the request absolute path. </summary>
@@ -79,16 +111,16 @@ namespace Bemol.Http {
         public Context Result(string resultString) => Result(Encoding.UTF8.GetBytes(resultString));
 
         /// <summary> Get the string result that will be sent to the client. </summary>
-        public string ResultString() => Encoding.UTF8.GetString(ByteArray);
+        public string ResultString() => Encoding.UTF8.GetString(ResultArray);
 
         /// <summary> Set an array of bytes result that will be sent to the client. </summary>
         public Context Result(byte[] byteArray) {
-            ByteArray = byteArray;
+            ResultArray = byteArray;
             return this;
         }
 
         /// <summary> Get the array of byte result that will be sent to the client. </summary>
-        public byte[] ResultBytes() => ByteArray;
+        public byte[] ResultBytes() => ResultArray;
 
         /// <summary> Get the array of byte result that will be sent to the client. </summary>
         public Stream ResultStream() => Response.OutputStream;

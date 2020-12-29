@@ -1,7 +1,6 @@
 using Bemol;
-using System;
 
-public class Program {
+public class Debug {
     public static void Main() {
         App app = new App(config => {
             config.DefaultContentType = "application/json";

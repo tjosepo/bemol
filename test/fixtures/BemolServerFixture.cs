@@ -5,9 +5,9 @@ using Bemol.Http;
 
 namespace Bemol.Test.Fixtures {
     public class BemolServerFixture : IDisposable {
-        public readonly int Port;
-        public HttpListener Listener = new HttpListener();
-        public HttpClient Client = new HttpClient();
+        private readonly int Port;
+        private HttpListener Listener = new HttpListener();
+        private HttpClient Client = new HttpClient();
 
         public BemolServerFixture() {
             Port = 7357;

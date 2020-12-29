@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -16,24 +17,6 @@ namespace Bemol.Test {
 
         BemolServerFixture Server;
 
-        public ContextTest(BemolServerFixture server) {
-            Server = server;
-        }
-
-        [Fact]
-        public void Body_Equal() {
-            HttpContent content = new StringContent("Hello world!");
-            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
-            Assert.Equal("Hello world!", ctx.Body());
-        }
-
-        [Fact]
-        public void BodyAsBytes_Equal() {
-            HttpContent content = new StringContent("Hello world!");
-            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
-            Assert.Equal(Encoding.UTF8.GetBytes("Hello world!"), ctx.BodyAsBytes());
-        }
-
         private class User {
             public string Name { set; get; }
             public int Age { set; get; }
@@ -41,6 +24,41 @@ namespace Bemol.Test {
                 Name = name;
                 Age = age;
             }
+        }
+
+        public ContextTest(BemolServerFixture server) {
+            Server = server;
+        }
+
+        [Fact]
+        public void Body_String_Equal() {
+            HttpContent content = new StringContent("Hello world!");
+            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
+            Assert.Equal("Hello world!", ctx.Body());
+        }
+
+        [Fact]
+        public void Body_Json_Equal() {
+            HttpContent content = JsonContent.Create(new { Name = "John", Age = 25 });
+            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
+            Assert.Equal("{\"name\":\"John\",\"age\":25}", ctx.Body());
+        }
+
+        [Fact]
+        public void Body_FormData_Equal() {
+            var form = new List<KeyValuePair<string, string>>();
+            form.Add(KeyValuePair.Create("foo", "bar"));
+            form.Add(KeyValuePair.Create("baz", "foobar"));
+            HttpContent formData = new FormUrlEncodedContent(form);
+            Context ctx = Server.GetContext(client => client.PostAsync("/", formData));
+            Assert.Equal("foo=bar&baz=foobar", ctx.Body());
+        }
+
+        [Fact]
+        public void BodyAsBytes_Equal() {
+            HttpContent content = new StringContent("Hello world!");
+            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
+            Assert.Equal(Encoding.UTF8.GetBytes("Hello world!"), ctx.BodyAsBytes());
         }
 
         [Fact]
@@ -57,6 +75,17 @@ namespace Bemol.Test {
         public void BodyAsClass_NotValid() {
             Context ctx = Server.GetContext(client => client.PostAsync("/", null));
             Assert.Throws<BadRequestException>(() => ctx.BodyAsClass<User>());
+        }
+
+        [Fact]
+        public void FormParam_Equal() {
+            var form = new List<KeyValuePair<string, string>>();
+            form.Add(KeyValuePair.Create("foo", "bar"));
+            form.Add(KeyValuePair.Create("baz", "foobar"));
+            HttpContent formData = new FormUrlEncodedContent(form);
+            Context ctx = Server.GetContext(client => client.PostAsync("/", formData));
+            Assert.Equal("bar", ctx.FormParam("foo"));
+            Assert.Equal("foobar", ctx.FormParam("baz"));
         }
 
         [Theory]
