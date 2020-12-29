@@ -1,6 +1,7 @@
 using System.Net;
 using System.Collections.Generic;
 using System.Text.Json;
+using Bemol.Core;
 using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
@@ -107,5 +108,11 @@ namespace Bemol.Http {
         /// Sets content type to <c>application/json</c>.
         /// </summary>     
         public Context Json(object obj) => Result(JsonSerializer.Serialize(obj)).ContentType("application/json");
+
+        /// <summary>
+        /// Renders a Liquid file located in the <c>resources</c> folder with specified values and sets it as the context result.
+        /// Also sets content-type to text/html.
+        /// </summary>
+        public Context Render(string filePath, object model) => Html(BemolRenderer.Render(filePath, model));
     }
 }
