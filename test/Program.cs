@@ -1,14 +1,36 @@
 using Bemol;
-using Bemol.Http.Exceptions;
+using System.Collections.Generic;
+using Bemol.DotLiquid;
 
 public class Program {
     public static void Main() {
         App app = new App(config => {
             config.DefaultContentType = "application/json";
         }).Start();
-        app.Get("/", ctx => throw new NotFoundException());
-        app.Get("/user/:name", ctx => ctx.Html($"Hello {ctx.PathParam("name")}."));
-        app.Error(404, ctx => throw new InternalServerErrorException());
-        app.Error(500, ctx => ctx.Result("An oopsy occured!"));
+
+        var list = new UsersList();
+        list.Users.Add(new User("Johnny", 20));
+        list.Users.Add(new User("Bob", 23));
+
+
+        app.Get("/", ctx => {
+            ctx.Render("/index.liquid", list);
+        });
+    }
+}
+
+
+class UsersList {
+    public List<User> Users { set; get; } = new List<User>();
+}
+
+class User : Drop {
+    public string Name { get; }
+    public int Age { set; get; }
+    public int BirthPlace { set; get; } = 99;
+
+    public User(string name, int age) {
+        Name = name;
+        Age = age;
     }
 }
