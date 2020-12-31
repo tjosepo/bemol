@@ -81,11 +81,11 @@ namespace Bemol.Test {
         public void FormParam_Equal() {
             var form = new List<KeyValuePair<string, string>>();
             form.Add(KeyValuePair.Create("foo", "bar"));
-            form.Add(KeyValuePair.Create("baz", "foobar"));
+            form.Add(KeyValuePair.Create("baz", "foobarzé"));
             HttpContent formData = new FormUrlEncodedContent(form);
             Context ctx = Server.GetContext(client => client.PostAsync("/", formData));
             Assert.Equal("bar", ctx.FormParam("foo"));
-            Assert.Equal("foobar", ctx.FormParam("baz"));
+            Assert.Equal("foobarzé", ctx.FormParam("baz"));
         }
 
         [Theory]

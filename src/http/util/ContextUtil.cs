@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
+using System.Web;
 
 namespace Bemol.Http.Util {
     public static class ContextUtil {
@@ -12,7 +12,8 @@ namespace Bemol.Http.Util {
             var fromData = new Dictionary<string, string>();
             if (str.Length == 0) return fromData;
 
-            string[] keyValues = str.Split('&');
+            var decodedStr = HttpUtility.UrlDecode(str);
+            string[] keyValues = decodedStr.Split('&');
             foreach (var keyValue in keyValues) {
                 var pair = keyValue.Split('=', 2);
                 fromData.Add(pair[0], pair[1]);

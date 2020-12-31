@@ -2,18 +2,14 @@
 
   <PropertyGroup>
     <PackageId>Bemol</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Authors>Tommy Josepovic</Authors>
     <IsPackable>true</IsPackable>
     <TargetFramework>net5.0</TargetFramework>
+    <DefaultItemExcludes>$(DefaultItemExcludes);test\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DotLiquid" Version="2.0.366" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="test\**" />
-  </ItemGroup>
-
 </Project>
