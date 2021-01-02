@@ -17,10 +17,10 @@ namespace Bemol.Http {
 
         private void Handle(HttpException e, Context ctx) {
             string result;
-            if (ctx.Response.ContentType == "application/json") {
+            if (ctx.ContentType() == "application/json") {
                 result = $@"{{""title"": ""{e.Message}"",""status"": {e.Status},""type"": ""{e.GetType().Name}""}}";
             } else {
-                result = e.Message;
+                result = $"{e.Status} {e.Message}";
             }
             ctx.Status(e.Status).Result(result);
         }

@@ -23,10 +23,14 @@ namespace Bemol.Http.Exceptions {
     }
 
     public class NotFoundException : HttpException {
-        public NotFoundException(string message = "Not found") : base(404, message) { }
+        public NotFoundException(string message = "Not Found") : base(404, message) { }
+    }
+
+    public class MethodNotAllowedException : HttpException {
+        public MethodNotAllowedException(string message = "Method Not Allowed") : base(405, message) { }
     }
 
     public class InternalServerErrorException : HttpException {
-        public InternalServerErrorException(string message = "Internal server error") : base(500, message) { }
+        public InternalServerErrorException(string message = "Internal Server Error") : base(500, message) { }
     }
 }

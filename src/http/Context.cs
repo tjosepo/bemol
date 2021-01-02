@@ -14,11 +14,13 @@ namespace Bemol.Http {
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
 
-        internal HttpListenerRequest Request;
-        internal HttpListenerResponse Response;
+        private HttpListenerRequest Request;
+        private HttpListenerResponse Response;
 
         private Dictionary<string, string> Form;
         public Dictionary<string, string> PathParamDict { get; set; }
+
+        internal BemolRenderer Renderer;
 
         private byte[] BodyArray;
         private byte[] ResultArray;
@@ -175,6 +177,6 @@ namespace Bemol.Http {
         /// Renders a Liquid file located in the <c>resources</c> folder with specified values and sets it as the context result.
         /// Also sets content-type to text/html.
         /// </summary>
-        public Context Render(string filePath, object model) => Html(BemolRenderer.Render(filePath, model));
+        public Context Render(string filePath, object model) => Html(Renderer.Render(filePath, model));
     }
 }

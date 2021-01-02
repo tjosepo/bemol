@@ -6,16 +6,19 @@ using Bemol.Http.Util;
 using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
-    class BemolServer {
-        private BemolConfig Config;
+    public class BemolServer {
         public int Port { set; get; } = 7000;
         public string Host { set; get; } = "localhost";
         public bool Started { set; get; } = false;
+
+        private BemolConfig Config;
+        private BemolRenderer Renderer;
         private PathMatcher Matcher = new PathMatcher();
         private ErrorMapper ErrorMapper = new ErrorMapper();
         private ExceptionMapper ExceptionMapper = new ExceptionMapper();
 
         public BemolServer(BemolConfig config) {
+            Renderer = new BemolRenderer(config);
             Config = config;
         }
 
@@ -25,7 +28,7 @@ namespace Bemol.Http {
                 listener.Prefixes.Add($"http://{Host}:{Port}{Config.ContextPath}");
                 listener.Start();
 
-                Console.Clear();
+                // Console.Clear();
                 Console.WriteLine($"Listening on http://{Host}:{Port}{Config.ContextPath}");
 
                 while (Started) {
@@ -38,6 +41,7 @@ namespace Bemol.Http {
         }
 
         public void HandleRequest(Context ctx) {
+            ctx.Renderer = Renderer;
             ctx.ContentType(Config.DefaultContentType);
 
             TryBeforeHandlers(ctx);
@@ -72,7 +76,7 @@ namespace Bemol.Http {
             var entries = Matcher.FindEntries(type, ctx.Path());
             var entry = entries.FindLast(entry => true);
 
-            if (entry == null) throw new NotFoundException($"'{ctx.Path()}' is not a valid path.");
+            if (entry == null) throw new NotFoundException();
 
             entry.Handler(ContextUtil.Update(ctx, entry));
         });
