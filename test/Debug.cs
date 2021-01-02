@@ -12,5 +12,8 @@ public class Debug {
             var body = ctx.Body();
             ctx.Result(body);
         });
+
+        var renderer = new Bemol.Core.BemolRenderer(new Bemol.Core.BemolConfig());
+        renderer.Render("/index.liquid");
     }
 }

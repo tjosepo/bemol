@@ -11,9 +11,9 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
 
-  <!-- Include static folder in bin -->
+  <!-- Include static folders in bin -->
   <ItemGroup> 
-    <Content Include="static\**"> 
+    <Content Include="resources\**;public\**"> 
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
   </ItemGroup>

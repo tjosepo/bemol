@@ -15,7 +15,7 @@ namespace Bemol.Test {
     [Collection("Context")]
     public class ContextTest {
 
-        BemolServerFixture Server;
+        readonly BemolServerFixture Server;
 
         private class User {
             public string Name { set; get; }
