@@ -1,6 +1,5 @@
 namespace Bemol.Core {
     public class BemolConfig {
-        public string SpaRoot = "/ClientApp";
         public string ResourcesFolder = "/resources";
         public string PartialsFolder = "/partials";
         public string PublicFolder = "/public";
