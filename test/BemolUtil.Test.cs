@@ -3,9 +3,7 @@ using Xunit;
 using Bemol.Core;
 
 namespace Bemol.Test {
-    public class BemolRendererTest {
-
-        readonly BemolRenderer Renderer = new BemolRenderer(new BemolConfig());
+    public class BemolUtilTest {
 
         [Theory]
         [InlineData("foo", "foo")]
@@ -17,11 +15,11 @@ namespace Bemol.Test {
         [InlineData("\\foo.liquid", "foo.liquid")]
         [InlineData("/foo/bar.liquid", "foo/bar.liquid")]
         [InlineData("\\foo\\bar.liquid", "foo/bar.liquid")]
-        public void NormalizePaths_Equal(string input, string expected) {
+        public void NormalizePath_Equal(string input, string expected) {
             var separator = Path.DirectorySeparatorChar;
             expected = expected.Replace("/", $"{separator}");
 
-            var result = Renderer.NormalizePaths(input);
+            var result = BemolUtil.NormalizePath(input);
             Assert.Equal(result, expected);
         }
     }

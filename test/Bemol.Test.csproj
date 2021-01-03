@@ -13,9 +13,9 @@
 
   <!-- Include static folders in bin -->
   <ItemGroup> 
-    <Content Include="resources\**;public\**"> 
+    <None Include="resources\**;public\**"> 
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
-    </Content> 
+    </None> 
   </ItemGroup>
 
   <ItemGroup>

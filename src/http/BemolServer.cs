@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using Bemol.Core;
@@ -13,12 +14,14 @@ namespace Bemol.Http {
 
         private BemolConfig Config;
         private BemolRenderer Renderer;
+        private StaticFilesHandler StaticFilesHandler;
         private PathMatcher Matcher = new PathMatcher();
         private ErrorMapper ErrorMapper = new ErrorMapper();
         private ExceptionMapper ExceptionMapper = new ExceptionMapper();
 
         public BemolServer(BemolConfig config) {
             Renderer = new BemolRenderer(config);
+            StaticFilesHandler = new StaticFilesHandler(config);
             Config = config;
         }
 
@@ -28,7 +31,7 @@ namespace Bemol.Http {
                 listener.Prefixes.Add($"http://{Host}:{Port}{Config.ContextPath}");
                 listener.Start();
 
-                // Console.Clear();
+                Console.Clear();
                 Console.WriteLine($"Listening on http://{Host}:{Port}{Config.ContextPath}");
 
                 while (Started) {
@@ -46,6 +49,9 @@ namespace Bemol.Http {
 
             TryBeforeHandlers(ctx);
             TryEndpointHandler(ctx);
+            if (ctx.Status() == 404) {
+                TryStaticFiles(ctx);
+            }
             TryErrorHandler(ctx);
             TryAfterHandlers(ctx);
 
@@ -67,18 +73,23 @@ namespace Bemol.Http {
         private void TryBeforeHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
             var beforeEntries = Matcher.FindEntries(HandlerType.BEFORE, ctx.Path());
             beforeEntries.ForEach(entry => {
-                entry.Handler(ContextUtil.Update(ctx, entry));
+                entry.Handle(ContextUtil.Update(ctx, entry));
             });
         });
 
         private void TryEndpointHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
             var type = Enum.Parse<HandlerType>(ctx.Method());
             var entries = Matcher.FindEntries(type, ctx.Path());
-            var entry = entries.FindLast(entry => true);
+            if (entries.Count == 0) throw new NotFoundException();
 
-            if (entry == null) throw new NotFoundException();
+            var entry = entries.Last();
+            entry.Handle(ContextUtil.Update(ctx, entry));
+        });
 
-            entry.Handler(ContextUtil.Update(ctx, entry));
+        private void TryStaticFiles(Context ctx) => TryWithExceptionMapper(ctx, () => {
+            if (ctx.Method() == "GET") {
+                StaticFilesHandler.Handle(ctx);
+            }
         });
 
         private void TryErrorHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
@@ -88,16 +99,14 @@ namespace Bemol.Http {
         private void TryAfterHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
             var afterEntries = Matcher.FindEntries(HandlerType.AFTER, ctx.Path());
             afterEntries.ForEach(entry => {
-                entry.Handler(ContextUtil.Update(ctx, entry));
+                entry.Handle(ContextUtil.Update(ctx, entry));
             });
         });
 
         private void SendResponse(Context ctx) {
-            var byteArray = ctx.ResultBytes();
             var resultStream = ctx.ResultStream();
-            resultStream.Write(byteArray);
+            resultStream.Write(ctx.ResultBytes());
             resultStream.Close();
-            Console.WriteLine($"[{ctx.Method()}] {ctx.Status()} {ctx.Path()}");
         }
     }
 }

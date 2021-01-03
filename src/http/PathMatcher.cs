@@ -1,18 +1,18 @@
-using Bemol.Core;
 using System.Linq;
 using System.Collections.Generic;
+using Bemol.Core;
 
 namespace Bemol.Http {
     public class HandlerEntry {
         public HandlerType Type { set; get; }
         public string Path { set; get; }
-        public Handler Handler { set; get; }
+        public Handler Handle { set; get; }
         private PathParser PathParser;
 
         public HandlerEntry(HandlerType type, string path, bool ignoreTrailingSlashes, Handler handler) {
             Type = type;
             Path = path;
-            Handler = handler;
+            Handle = handler;
             PathParser = new PathParser(path, ignoreTrailingSlashes);
         }
 

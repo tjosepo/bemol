@@ -177,6 +177,6 @@ namespace Bemol.Http {
         /// Renders a Liquid file located in the <c>resources</c> folder with specified values and sets it as the context result.
         /// Also sets content-type to text/html.
         /// </summary>
-        public Context Render(string filePath, object model) => Html(Renderer.Render(filePath, model));
+        public Context Render(string filePath, object model = null) => Html(Renderer.Render(filePath, model));
     }
 }

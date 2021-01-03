@@ -15,7 +15,7 @@ namespace Bemol.Core {
             SetFileSystem();
         }
 
-        public string Render(string filePath, object model = null) {
+        public string Render(string filePath, object model) {
             var template = GetTemplate(filePath);
             var hash = Hash.FromAnonymousObject(model);
             return template.Render(hash);
@@ -23,16 +23,16 @@ namespace Bemol.Core {
 
         private void SetFileSystem() {
             var currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-            var resources = NormalizePaths(Config.ResourcesFolder);
-            var partials = NormalizePaths(Config.PartialsFolder);
+            var resources = BemolUtil.NormalizePath(Config.ResourcesFolder);
+            var partials = BemolUtil.NormalizePath(Config.PartialsFolder);
             var separator = Path.DirectorySeparatorChar;
             Template.FileSystem = new LocalFileSystem($"{currentDirectory}{resources}{separator}{partials}");
         }
 
         private Template GetTemplate(string filePath) {
-            filePath = NormalizePaths(filePath);
+            filePath = BemolUtil.NormalizePath(filePath);
             var currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-            var resources = NormalizePaths(Config.ResourcesFolder);
+            var resources = BemolUtil.NormalizePath(Config.ResourcesFolder);
             var separator = Path.DirectorySeparatorChar;
             var text = File.ReadAllTextAsync($"{currentDirectory}{resources}{separator}{filePath}").Result;
             var hash = text.GetHashCode();
@@ -40,15 +40,6 @@ namespace Bemol.Core {
                 Cache[hash] = Template.Parse(text);
             }
             return Cache[hash];
-        }
-
-        public string NormalizePaths(string path) {
-            if (Regex.IsMatch(path, @"^[\/|\\]")) path = path.Remove(0, 1);
-            if (Regex.IsMatch(path, @"[\/|\\]$")) path = path.Remove(path.Length - 1, 1);
-            var separator = Path.DirectorySeparatorChar;
-            path = path.Replace("\\", $"{separator}");
-            path = path.Replace("/", $"{separator}");
-            return path;
         }
     }
 }
