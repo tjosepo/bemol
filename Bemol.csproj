@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Bemol</PackageId>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>Tommy Josepovic</Authors>
     <IsPackable>true</IsPackable>
     <TargetFramework>net5.0</TargetFramework>

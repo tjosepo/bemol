@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Web;
 
 namespace Bemol.Http.Util {
@@ -8,8 +8,8 @@ namespace Bemol.Http.Util {
             return ctx;
         }
 
-        public static Dictionary<string, string> SplitKeyValueStringAndGroupByKey(string str) {
-            var fromData = new Dictionary<string, string>();
+        public static NameValueCollection SplitKeyValueStringAndGroupByKey(string str) {
+            var fromData = new NameValueCollection();
             if (str.Length == 0) return fromData;
 
             var decodedStr = HttpUtility.UrlDecode(str);

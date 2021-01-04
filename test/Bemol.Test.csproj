@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- extends watching group to include *.liquid files -->
+      <Watch Include="**\*.liquid" Exclude="obj\**\*;bin\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Bemol.csproj" />
   </ItemGroup>
 

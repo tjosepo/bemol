@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Bemol.Core;
 using Bemol.Http.Util;
 using Bemol.Http.Exceptions;
@@ -36,9 +37,11 @@ namespace Bemol.Http {
 
                 while (Started) {
                     var rawCtx = listener.GetContext();
-                    var ctx = new Context(rawCtx);
-                    HandleRequest(ctx);
-                    SendResponse(ctx);
+                    new Task(() => {
+                        var ctx = new Context(rawCtx);
+                        HandleRequest(ctx);
+                        SendResponse(ctx);
+                    }).Start();
                 }
             }).Start();
         }

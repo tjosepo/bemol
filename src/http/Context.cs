@@ -17,8 +17,8 @@ namespace Bemol.Http {
         private HttpListenerRequest Request;
         private HttpListenerResponse Response;
 
-        private Dictionary<string, string> Form;
-        public Dictionary<string, string> PathParamDict { get; set; }
+        private NameValueCollection Form;
+        internal Dictionary<string, string> PathParamDict { get; set; }
 
         internal BemolRenderer Renderer;
 
@@ -36,7 +36,7 @@ namespace Bemol.Http {
 
         /// <summary> Gets the request body as a <paramref name="string"/>. </summary>
         public string Body() {
-            var bytes = (BodyArray != null) ? BodyArray : BodyAsBytes();
+            var bytes = BodyArray ?? BodyAsBytes();
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -64,15 +64,18 @@ namespace Bemol.Http {
             }
         }
         /// <summary> Gets a form param if it exists, else null. </summary>
-        public string FormParam(string key) {
-            if (Form == null) Form = ContextUtil.SplitKeyValueStringAndGroupByKey(Body());
-            return Form[key];
-        }
+        public string FormParam(string key) => FormParam()[key];
 
         /// <summary> Gets a form param if it exists, else a default value (null if not specified explicitly).</summary>
         public string FormParam(string key, string defaultValue = null) {
             var value = FormParam(key);
-            return (value != null) ? value : defaultValue;
+            return value ?? defaultValue;
+        }
+
+        /// <summary> Gets a collection with all the form param keys and values </summary>
+        public NameValueCollection FormParam() {
+            Form ??= ContextUtil.SplitKeyValueStringAndGroupByKey(Body());
+            return Form;
         }
 
         /// <summary> 
@@ -91,19 +94,28 @@ namespace Bemol.Http {
         public string ContentType() => Request.ContentType;
 
         /// <summary> Gets a request cookie by name, or null. </summary>
-        public Cookie Cookie(string name) => Request.Cookies[name];
+        public string Cookie(string name) => Request.Cookies[name]?.Value;
 
         /// <summary> Gets a request header by name, or null. </summary>
-        public string Header(string header) => HeaderMap()[header];
+        public string Header(string header) => Header()[header];
 
-        /// <summary> Gets a map with all the header keys and values on the request. </summary>
-        public NameValueCollection HeaderMap() => Request.Headers;
+        /// <summary> Gets a collection with all the header keys and values on the request. </summary>
+        public NameValueCollection Header() => Request.Headers;
+
+        /// <summary> Gets the request ip. </summary>
+        public string Ip() => Request.UserHostAddress;
 
         /// <summary> Gets the request method. </summary>
         public string Method() => Request.HttpMethod;
 
         /// <summary> Gets the request absolute path. </summary>
         public string Path() => Request.Url.AbsolutePath;
+
+        /// <summary> Gets the request query string, or null. </summary>
+        public string QueryString() => Request.Url.Query;
+
+        /// <summary> Gets the request user agent, or null. </summary>
+        public string UserAgent() => Request.UserAgent;
 
         // ********************************************************************************************
         // RESPONSE
@@ -149,17 +161,16 @@ namespace Bemol.Http {
         public int Status() => Response.StatusCode;
 
         /// <summary> Sets a cookie with name and value. </summary>
-        public Context Cookie(string name, string value) {
-            var cookie = new Cookie(name, value, "/");
-            Response.SetCookie(cookie);
-            return this;
-        }
+        public Context Cookie(string name, string value) => Cookie(new Cookie(name, value));
 
         /// <summary> Sets a cookie. </summary>
         public Context Cookie(Cookie cookie) {
             Response.SetCookie(cookie);
             return this;
         }
+
+        /// <summary> Removes cookie specified by name. </summary>
+        public Context RemoveCookie(string name) => Cookie(new Cookie(name, null) { Expired = true });
 
         /// <summary> 
         /// Sets context result to specified html string 

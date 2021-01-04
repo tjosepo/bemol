@@ -39,8 +39,6 @@ namespace Bemol.Http {
             return $"{currentDirectory}{publicFolder}{separator}{requestPath}";
         }
 
-        private string GetContentType(string extension) {
-            return MimeTypeMap.GetMimeType(extension);
-        }
+        private string GetContentType(string extension) => MimeTypeMap.GetMimeType(extension);
     }
 }

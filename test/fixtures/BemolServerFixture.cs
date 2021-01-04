@@ -24,6 +24,12 @@ namespace Bemol.Test.Fixtures {
             return ctx;
         }
 
+        public void SendResponse(Context ctx) {
+            var resultStream = ctx.ResultStream();
+            resultStream.Write(ctx.ResultBytes());
+            resultStream.Close();
+        }
+
         public delegate void ClientHandler(HttpClient client);
 
         public void Dispose() {

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -29,6 +30,10 @@ namespace Bemol.Test {
         public ContextTest(BemolServerFixture server) {
             Server = server;
         }
+
+        // ********************************************************************************************
+        // REQUEST
+        // ********************************************************************************************
 
         [Fact]
         public void Body_String_Equal() {
@@ -88,13 +93,66 @@ namespace Bemol.Test {
             Assert.Equal("foobarzé", ctx.FormParam("baz"));
         }
 
+        [Fact]
+        public void FormParam_FormIsNull_IsNull() {
+            Context ctx = Server.GetContext(client => client.PostAsync("/", null));
+            Assert.Null(ctx.FormParam("foo"));
+        }
+
+        [Fact]
+        public void FormParam_MultipleValuesForSameKey_Equal() {
+            var form = new List<KeyValuePair<string, string>>();
+            form.Add(KeyValuePair.Create("foo", "bar"));
+            form.Add(KeyValuePair.Create("foo", "baz"));
+            HttpContent formData = new FormUrlEncodedContent(form);
+            Context ctx = Server.GetContext(client => client.PostAsync("/", formData));
+            Assert.Equal("bar,baz", ctx.FormParam("foo"));
+        }
+
+        [Fact]
+        public void ContentType_TextPlain_Equal() {
+            var content = new StringContent("Hello world!");
+            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
+            Assert.Matches("text/plain", ctx.ContentType());
+        }
+
+        [Fact]
+        public void ContentType_ApplicationJson_Equal() {
+            var content = JsonContent.Create(new User());
+            Context ctx = Server.GetContext(client => client.PostAsync("/", content));
+            Assert.Matches("application/json", ctx.ContentType());
+        }
+
         [Theory]
-        [InlineData("/")]
-        [InlineData("/user")]
-        [InlineData("/user/")]
-        public void Path_Equal(string path) {
-            Context ctx = Server.GetContext(client => client.GetAsync(path));
-            Assert.Equal(path, ctx.Path());
+        [InlineData("foo", "bar")]
+        public void Cookie_GetCookie_Equal(string name, string value) {
+            Context ctx = Server.GetContext(client => {
+                client.DefaultRequestHeaders.Add("Cookie", $"{name}={value}");
+                client.GetAsync("/");
+            });
+            Assert.Equal(value, ctx.Cookie(name));
+        }
+
+        [Fact]
+        public void Cookie_GetCookie_IsNull() {
+            Context ctx = Server.GetContext(client => client.GetAsync("/"));
+            Assert.Null(ctx.Cookie("bar"));
+        }
+
+        [Theory]
+        [InlineData("foo", "bar")]
+        public void Header_Equal(string name, string value) {
+            Context ctx = Server.GetContext(client => {
+                client.DefaultRequestHeaders.Add(name, value);
+                client.GetAsync("/");
+            });
+            Assert.Equal(value, ctx.Header(name));
+        }
+
+        [Fact]
+        public void Header_NameDoesntExist_IsNull() {
+            Context ctx = Server.GetContext(client => client.GetAsync("/"));
+            Assert.Null(ctx.Header("foo"));
         }
 
         [Fact]
@@ -108,6 +166,34 @@ namespace Bemol.Test {
             Context ctx = Server.GetContext(client => client.PostAsync("/", null));
             Assert.Equal("POST", ctx.Method());
         }
+
+        [Theory]
+        [InlineData("/")]
+        [InlineData("/user")]
+        [InlineData("/user/")]
+        public void Path_Equal(string path) {
+            Context ctx = Server.GetContext(client => client.GetAsync(path));
+            Assert.Equal(path, ctx.Path());
+        }
+
+        [Fact]
+        public void UserAgent_Normal_Equal() {
+            Context ctx = Server.GetContext(client => {
+                client.DefaultRequestHeaders.Add("User-Agent", "Foo");
+                client.GetAsync("/");
+            });
+            Assert.Equal("Foo", ctx.UserAgent());
+        }
+
+        [Fact]
+        public void UserAgent_IsNull_Equal() {
+            Context ctx = Server.GetContext(client => client.GetAsync("/"));
+            Assert.Null(ctx.UserAgent());
+        }
+
+        // ********************************************************************************************
+        // RESPONSE
+        // ********************************************************************************************
 
         [Theory]
         [InlineData("Hello world!")]
@@ -138,9 +224,55 @@ namespace Bemol.Test {
         [InlineData(404)]
         [InlineData(500)]
         public void Status_SetUsingStatus_Equal(int status) {
-            Context ctx = Server.GetContext(client => client.GetAsync("/"));
+            Context ctx = Server.GetContext(async client => {
+                var response = await client.GetAsync("/");
+                Assert.Equal(status, (int)response.StatusCode);
+            });
             ctx.Status(status);
-            Assert.Equal(status, ctx.Status());
+            Server.SendResponse(ctx);
+        }
+
+        [Theory]
+        [InlineData("baz", "for")]
+        public void Cookie_SetNameValue_Equal(string name, string value) {
+            Context ctx = Server.GetContext(async client => {
+                var response = await client.GetAsync("/");
+                var cookies = response.Headers.GetValues("Set-Cookie");
+                foreach (var cookie in cookies) {
+                    Assert.Equal($"{name}={value}", cookie);
+                }
+            });
+            ctx.Cookie(name, value);
+            Server.SendResponse(ctx);
+        }
+
+        [Theory]
+        [InlineData("for", "baz")]
+        public void Cookie_SetCookie_Equal(string name, string value) {
+            Context ctx = Server.GetContext(async client => {
+                var response = await client.GetAsync("/");
+                var cookies = response.Headers.GetValues("Set-Cookie");
+                foreach (var cookie in cookies) {
+                    Assert.Equal($"{name}={value}", cookie);
+                }
+            });
+            ctx.Cookie(new Cookie(name, value));
+            Server.SendResponse(ctx);
+        }
+
+        [Theory]
+        [InlineData("baz", "buzz")]
+        public void RemoveCookie_Expired(string name, string value) {
+            Context ctx = Server.GetContext(async client => {
+                client.DefaultRequestHeaders.Add("Cookie", $"{name}={value}");
+                var response = await client.GetAsync("/");
+                var cookies = response.Headers.GetValues("Set-Cookie");
+                foreach (var cookie in cookies) {
+                    Assert.Equal($"{name}=; Max-Age=0", cookie);
+                }
+            });
+            ctx.RemoveCookie(name);
+            Server.SendResponse(ctx);
         }
 
         [Fact]
