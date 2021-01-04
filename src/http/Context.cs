@@ -17,7 +17,8 @@ namespace Bemol.Http {
         private readonly HttpListenerRequest Request;
         private readonly HttpListenerResponse Response;
 
-        private NameValueCollection Form;
+
+        private Form Form;
         internal Dictionary<string, string> PathParamDict { get; set; }
 
         internal BemolRenderer Renderer;
@@ -63,6 +64,13 @@ namespace Bemol.Http {
                 throw new BadRequestException();
             }
         }
+
+        /// <summary> Gets first [UploadedFile] for the specified name, or null. </summary>
+        public UploadedFile UploadedFile(string name) {
+            Form ??= new Form(this);
+            return Form.Files?[name];
+        }
+
         /// <summary> Gets a form param if it exists, else null. </summary>
         public string FormParam(string key) => FormParam()[key];
 
@@ -74,8 +82,8 @@ namespace Bemol.Http {
 
         /// <summary> Gets a collection with all the form param keys and values </summary>
         public NameValueCollection FormParam() {
-            Form ??= ContextUtil.SplitKeyValueStringAndGroupByKey(Body());
-            return Form;
+            Form ??= new Form(this);
+            return Form.Parameters;
         }
 
         /// <summary> 
@@ -104,6 +112,8 @@ namespace Bemol.Http {
 
         /// <summary> Gets the request ip. </summary>
         public string Ip() => Request.UserHostAddress;
+
+        public bool IsMultipartFormData() => Request.ContentType?.Contains("multipart/form-data") ?? false;
 
         /// <summary> Gets the request method. </summary>
         public string Method() => Request.HttpMethod;

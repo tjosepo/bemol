@@ -1,1 +1,16 @@
-Hello {{ "world" | upcase }}!
+{%- include 'header', title: 'Bemol' -%}
+
+<form enctype="multipart/form-data" method="POST">
+    <input type="text" name="foo" placeholder="foo" />
+    <input type="file" name="file" />
+    <button>Submit</button>
+</form>
+
+{%- if multipart -%}
+    <p>{{ type }}:</p>
+    <code>
+        <pre>{{ foo }}</pre>
+    </code>
+{%- endif -%}
+
+{%- include 'footer' -%}
