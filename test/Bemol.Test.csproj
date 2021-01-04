@@ -13,14 +13,10 @@
 
   <!-- Include static folders in bin -->
   <ItemGroup> 
-    <None Include="resources\**;public\**"> 
+    <Watch Include="resources/**;public/**" />
+    <None Include="resources/**;public/**"> 
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </None> 
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- extends watching group to include *.liquid files -->
-      <Watch Include="**\*.liquid" Exclude="obj\**\*;bin\**\*" />
   </ItemGroup>
 
   <ItemGroup>

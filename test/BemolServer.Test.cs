@@ -5,7 +5,7 @@ using Bemol.Http;
 
 namespace Bemol.Test {
     public class BemolServerTest {
-        readonly BemolServer Server;
+        private readonly BemolServer Server;
 
         public BemolServerTest() {
             var config = new BemolConfig();

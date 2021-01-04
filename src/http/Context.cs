@@ -1,9 +1,9 @@
+using System.IO;
 using System.Net;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Text;
 using System.Text.Json;
-using System.IO;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 
 using Bemol.Core;
 using Bemol.Http.Util;
@@ -14,8 +14,8 @@ namespace Bemol.Http {
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
 
-        private HttpListenerRequest Request;
-        private HttpListenerResponse Response;
+        private readonly HttpListenerRequest Request;
+        private readonly HttpListenerResponse Response;
 
         private NameValueCollection Form;
         internal Dictionary<string, string> PathParamDict { get; set; }

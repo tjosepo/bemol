@@ -1,12 +1,12 @@
 using System;
+
 using Bemol.Core;
 using Bemol.Http;
 
 namespace Bemol {
     public class App {
-        private BemolConfig Config = new BemolConfig();
-
-        private BemolServer Server;
+        private readonly BemolServer Server;
+        private readonly BemolConfig Config = new BemolConfig();
 
         public App() => Server = new BemolServer(Config);
 

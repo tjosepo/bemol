@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+
 using Bemol.Http;
 
 namespace Bemol.Test.Fixtures {
@@ -11,16 +12,17 @@ namespace Bemol.Test.Fixtures {
 
         public BemolServerFixture() {
             Port = 7357;
-            var address = $"http://localhost:{Port}/";
+            string address = $"http://localhost:{Port}/";
             Listener.Prefixes.Add(address);
             Listener.Start();
             Client.BaseAddress = new Uri(address);
+            Client.Timeout = new TimeSpan(300 * 100000);
         }
 
         public Context GetContext(ClientHandler handler) {
-            handler(Client);
+            handler.Invoke(Client);
             var rawCtx = Listener.GetContext();
-            Context ctx = new Context(rawCtx);
+            var ctx = new Context(rawCtx);
             return ctx;
         }
 

@@ -1,13 +1,14 @@
 using System;
 using System.IO;
+
+using MimeTypes;
 using Bemol.Core;
 using Bemol.Http.Exceptions;
-using MimeTypes;
 
 namespace Bemol.Http {
     public class StaticFilesHandler {
 
-        BemolConfig Config;
+        private readonly BemolConfig Config;
 
         public StaticFilesHandler(BemolConfig config) {
             Config = config;

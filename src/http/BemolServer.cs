@@ -1,29 +1,30 @@
 using System;
-using System.Linq;
 using System.Net;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Bemol.Core;
 using Bemol.Http.Util;
 using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
     public class BemolServer {
-        public int Port { set; get; } = 7000;
-        public string Host { set; get; } = "localhost";
-        public bool Started { set; get; } = false;
+        public int Port = 7000;
+        public string Host = "localhost";
+        public bool Started = false;
 
-        private BemolConfig Config;
-        private BemolRenderer Renderer;
-        private StaticFilesHandler StaticFilesHandler;
-        private PathMatcher Matcher = new PathMatcher();
-        private ErrorMapper ErrorMapper = new ErrorMapper();
-        private ExceptionMapper ExceptionMapper = new ExceptionMapper();
+        private readonly BemolConfig Config;
+        private readonly BemolRenderer Renderer;
+        private readonly StaticFilesHandler StaticFilesHandler;
+        private readonly PathMatcher Matcher = new PathMatcher();
+        private readonly ErrorMapper ErrorMapper = new ErrorMapper();
+        private readonly ExceptionMapper ExceptionMapper = new ExceptionMapper();
 
         public BemolServer(BemolConfig config) {
+            Config = config;
             Renderer = new BemolRenderer(config);
             StaticFilesHandler = new StaticFilesHandler(config);
-            Config = config;
         }
 
         public void Start() {

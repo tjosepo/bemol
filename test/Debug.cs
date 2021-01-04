@@ -4,7 +4,7 @@ public class Debug {
     public static void Main() {
         App app = new App().Start();
         app.Get("/", ctx => {
-            ctx.Html($"Content type: {ctx.ContentType()}");
+            ctx.Render("index.liquid");
         });
 
         app.Get("/add", ctx => {

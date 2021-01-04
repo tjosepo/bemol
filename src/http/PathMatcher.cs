@@ -1,13 +1,14 @@
 using System.Linq;
 using System.Collections.Generic;
+
 using Bemol.Core;
 
 namespace Bemol.Http {
     public class HandlerEntry {
-        public HandlerType Type { set; get; }
-        public string Path { set; get; }
-        public Handler Handle { set; get; }
-        private PathParser PathParser;
+        public readonly HandlerType Type;
+        public readonly string Path;
+        public readonly Handler Handle;
+        private readonly PathParser PathParser;
 
         public HandlerEntry(HandlerType type, string path, bool ignoreTrailingSlashes, Handler handler) {
             Type = type;
@@ -26,7 +27,7 @@ namespace Bemol.Http {
     }
 
     public class PathMatcher {
-        private Dictionary<HandlerType, List<HandlerEntry>> HandlerEntries;
+        private readonly Dictionary<HandlerType, List<HandlerEntry>> HandlerEntries;
 
         public PathMatcher() {
             // TODO: There probably exists a more clever way to initialize this dictionary.
