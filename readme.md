@@ -12,7 +12,7 @@ Bemol's main goal is simplicity. You don't have to extend anything, there are no
 #### .NET CLI
 
 ```
-dotnet add package Bemol --version 0.1.3
+$ dotnet add package Bemol --version 0.1.3
 ```
 
 #### .csproj
@@ -39,7 +39,7 @@ class HelloWorld {
 Then:
 
 ```
-dotnet watch run
+$ dotnet watch run
 ```
 
 ## Examples
