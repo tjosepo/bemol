@@ -22,7 +22,7 @@ namespace Bemol.Test.Fixtures {
         public Context GetContext(ClientHandler handler) {
             handler.Invoke(Client);
             var rawCtx = Listener.GetContext();
-            var ctx = new Context(rawCtx);
+            var ctx = new Context(rawCtx, new Core.BemolConfig());
             return ctx;
         }
 

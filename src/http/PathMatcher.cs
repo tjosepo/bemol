@@ -4,32 +4,32 @@ using System.Collections.Generic;
 using Bemol.Core;
 
 namespace Bemol.Http {
-    public class HandlerEntry {
-        public readonly HandlerType Type;
-        public readonly string Path;
-        public readonly Handler Handle;
+    internal class HandlerEntry {
+        internal readonly HandlerType Type;
+        internal readonly string Path;
+        internal readonly Handler Handle;
         private readonly PathParser PathParser;
 
-        public HandlerEntry(HandlerType type, string path, bool ignoreTrailingSlashes, Handler handler) {
+        internal HandlerEntry(HandlerType type, string path, bool ignoreTrailingSlashes, Handler handler) {
             Type = type;
             Path = path;
             Handle = handler;
             PathParser = new PathParser(path, ignoreTrailingSlashes);
         }
 
-        public bool Matches(string requestUri) {
+        internal bool Matches(string requestUri) {
             return PathParser.Matches(requestUri);
         }
 
-        public Dictionary<string, string> ExtractPathParams(string requestUri) {
+        internal Dictionary<string, string> ExtractPathParams(string requestUri) {
             return PathParser.ExtractPathParams(requestUri);
         }
     }
 
-    public class PathMatcher {
+    internal class PathMatcher {
         private readonly Dictionary<HandlerType, List<HandlerEntry>> HandlerEntries;
 
-        public PathMatcher() {
+        internal PathMatcher() {
             // TODO: There probably exists a more clever way to initialize this dictionary.
             HandlerEntries = new Dictionary<HandlerType, List<HandlerEntry>>();
             foreach (var type in System.Enum.GetValues<HandlerType>()) {
@@ -37,15 +37,15 @@ namespace Bemol.Http {
             }
         }
 
-        public void Add(HandlerEntry entry) {
+        internal void Add(HandlerEntry entry) {
             HandlerEntries[entry.Type].Add(entry);
         }
 
-        public List<HandlerEntry> FindEntries(HandlerType type, string requestUri) {
+        internal List<HandlerEntry> FindEntries(HandlerType type, string requestUri) {
             return HandlerEntries[type].Where(entry => Match(entry, requestUri)).ToList();
         }
 
-        private bool Match(HandlerEntry entry, string requestPath) {
+        internal bool Match(HandlerEntry entry, string requestPath) {
             if (entry.Path == "*") return true;
             if (entry.Path == requestPath) return true;
             else return entry.Matches(requestPath);

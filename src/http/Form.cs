@@ -1,9 +1,9 @@
 using System.IO;
-using System.Web;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
 using HttpMultipartParser;
+using Bemol.Http.Util;
 
 namespace Bemol.Http {
     internal class Form {
@@ -13,21 +13,7 @@ namespace Bemol.Http {
         internal Form(Context ctx) {
             (Parameters, Files) = (ctx.IsMultipartFormData())
                     ? MultipartFormData(new MemoryStream(ctx.BodyAsBytes()))
-                    : SplitKeyValueStringAndGroupByKey(ctx.Body());
-        }
-
-        private (NameValueCollection, Dictionary<string, UploadedFile>) SplitKeyValueStringAndGroupByKey(string data) {
-            var parameters = new NameValueCollection();
-            if (data.Length == 0) return (parameters, null);
-
-            var decodedStr = HttpUtility.UrlDecode(data);
-            string[] keyValues = decodedStr.Split('&');
-            foreach (var keyValue in keyValues) {
-                var pair = keyValue.Split('=', 2);
-                parameters.Add(pair[0], pair[1]);
-            }
-
-            return (parameters, null);
+                    : (ContextUtil.SplitKeyValueString(ctx.Body()), new Dictionary<string, UploadedFile>());
         }
 
         /// TODO: Use streaming instead of parsing everything in one go.

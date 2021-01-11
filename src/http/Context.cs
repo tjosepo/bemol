@@ -16,19 +16,19 @@ namespace Bemol.Http {
 
         private readonly HttpListenerRequest Request;
         private readonly HttpListenerResponse Response;
+        private readonly BemolRenderer Renderer;
 
+        private Form? Form;
+        private NameValueCollection? Query;
+        internal Dictionary<string, string>? PathParamDict;
 
-        private Form Form;
-        internal Dictionary<string, string> PathParamDict { get; set; }
+        private byte[] BodyArray = null!;  // Because byte?[] to byte[] conversion is a pain
+        private byte[] ResultArray = null!;  // Because byte?[] to byte[] conversion is a pain
 
-        internal BemolRenderer Renderer;
-
-        private byte[] BodyArray;
-        private byte[] ResultArray;
-
-        public Context(HttpListenerContext ctx) {
+        internal Context(HttpListenerContext ctx, BemolConfig config) {
             Request = ctx.Request;
             Response = ctx.Response;
+            Renderer = new BemolRenderer(config);
         }
 
         // ********************************************************************************************
@@ -37,7 +37,7 @@ namespace Bemol.Http {
 
         /// <summary> Gets the request body as a <paramref name="string"/>. </summary>
         public string Body() {
-            var bytes = BodyArray ?? BodyAsBytes();
+            byte[] bytes = BodyArray ?? BodyAsBytes();
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -56,7 +56,7 @@ namespace Bemol.Http {
         /// Throws <c>BadRequestException</c> if the object cannot be mapped. 
         /// </summary>
         /// <returns> The mapped object </returns>
-        public T BodyAsClass<T>() {
+        public T? BodyAsClass<T>() {
             string json = Body();
             try {
                 return JsonSerializer.Deserialize<T>(json);
@@ -65,17 +65,17 @@ namespace Bemol.Http {
             }
         }
 
-        /// <summary> Gets first [UploadedFile] for the specified name, or null. </summary>
-        public UploadedFile UploadedFile(string name) {
+        /// <summary> Gets first <c>UploadedFile</c> for the specified name, or null. </summary>
+        public UploadedFile? UploadedFile(string name) {
             Form ??= new Form(this);
             return Form.Files?[name];
         }
 
         /// <summary> Gets a form param if it exists, else null. </summary>
-        public string FormParam(string key) => FormParam()[key];
+        public string? FormParam(string key) => FormParam()[key];
 
         /// <summary> Gets a form param if it exists, else a default value (null if not specified explicitly).</summary>
-        public string FormParam(string key, string defaultValue = null) {
+        public string? FormParam(string key, string? defaultValue = null) {
             var value = FormParam(key);
             return value ?? defaultValue;
         }
@@ -91,7 +91,7 @@ namespace Bemol.Http {
         /// Throws <c>InternalServerErrorException</c> if the path param cannot be found. 
         /// </summary>
         public string PathParam(string key) {
-            if (!PathParamDict.ContainsKey(key)) throw new InternalServerErrorException($"'{key}' is not a valid path-param for '{Path()}'.");
+            if (!PathParamDict!.ContainsKey(key)) throw new InternalServerErrorException($"'{key}' is not a valid path-param for '{Path()}'.");
             return PathParamDict[key];
         }
 
@@ -99,13 +99,13 @@ namespace Bemol.Http {
         public long ContentLength() => Request.ContentLength64;
 
         /// <summary> Gets the request content type, or null. </summary>
-        public string ContentType() => Request.ContentType;
+        public string? ContentType() => Request.ContentType;
 
         /// <summary> Gets a request cookie by name, or null. </summary>
-        public string Cookie(string name) => Request.Cookies[name]?.Value;
+        public string? Cookie(string name) => Request.Cookies[name]?.Value;
 
         /// <summary> Gets a request header by name, or null. </summary>
-        public string Header(string header) => Header()[header];
+        public string? Header(string header) => Header()[header];
 
         /// <summary> Gets a collection with all the header keys and values on the request. </summary>
         public NameValueCollection Header() => Request.Headers;
@@ -113,18 +113,28 @@ namespace Bemol.Http {
         /// <summary> Gets the request ip. </summary>
         public string Ip() => Request.UserHostAddress;
 
+        /// <summary> Returns true if request is multipart/form-data </summary>
         public bool IsMultipartFormData() => Request.ContentType?.Contains("multipart/form-data") ?? false;
 
         /// <summary> Gets the request method. </summary>
         public string Method() => Request.HttpMethod;
 
         /// <summary> Gets the request absolute path. </summary>
-        public string Path() => Request.Url.AbsolutePath;
+        public string Path() => Request.Url!.AbsolutePath;
 
-        /// <summary> Gets the request query string, or null. </summary>
-        public string QueryString() => Request.Url.Query;
+        /// <summary> Gets a comma separated string with all for params of the specified key, or null. </summary>
+        public string? QueryParam(string key) => QueryMap()[key];
 
-        /// <summary> Gets the request user agent, or null. </summary>
+        /// <summary> Gets a collection with all the query param keys and values. </summary>
+        public NameValueCollection QueryMap() {
+            Query ??= ContextUtil.SplitKeyValueString(QueryString());
+            return Query;
+        }
+
+        /// <summary> Gets the request query string. </summary>
+        public string QueryString() => Request.Url!.Query;
+
+        /// <summary> Gets the request user agent. </summary>
         public string UserAgent() => Request.UserAgent;
 
         // ********************************************************************************************
@@ -198,6 +208,6 @@ namespace Bemol.Http {
         /// Renders a Liquid file located in the <c>resources</c> folder with specified values and sets it as the context result.
         /// Also sets content-type to text/html.
         /// </summary>
-        public Context Render(string filePath, object model = null) => Html(Renderer.Render(filePath, model));
+        public Context Render(string filePath, object? model = null) => Html(Renderer.Render(filePath, model));
     }
 }

@@ -4,18 +4,17 @@ using System.Collections.Generic;
 using DotLiquid;
 using DotLiquid.FileSystems;
 
-
 namespace Bemol.Core {
-    public class BemolRenderer {
+    internal class BemolRenderer {
         private readonly BemolConfig Config;
         private readonly Dictionary<int, Template> Cache = new Dictionary<int, Template>();
 
-        public BemolRenderer(BemolConfig config) {
+        internal BemolRenderer(BemolConfig config) {
             Config = config;
             SetFileSystem();
         }
 
-        public string Render(string filePath, object model) {
+        internal string Render(string filePath, object? model) {
             var template = GetTemplate(filePath);
             var hash = Hash.FromAnonymousObject(model);
             return template.Render(hash);

@@ -176,6 +176,21 @@ namespace Bemol.Test {
             Assert.Equal(path, ctx.Path());
         }
 
+        [Theory]
+        [InlineData("/?foo=bar", "foo", "bar")]
+        [InlineData("/?foo=bar&foo=baz", "foo", "bar,baz")]
+        public void QueryMap_Equal(string url, string key, string value) {
+            var ctx = Server.GetContext(client => client.GetAsync(url));
+            Assert.Equal(value, ctx.QueryMap()[key]);
+        }
+
+        [Theory]
+        [InlineData("/hello?foo=bar", "?foo=bar")]
+        public void QueryString_Equal(string url, string expected) {
+            var ctx = Server.GetContext(client => client.GetAsync(url));
+            Assert.Equal(expected, ctx.QueryString());
+        }
+
         [Fact]
         public void UserAgent_Normal_Equal() {
             var ctx = Server.GetContext(client => {

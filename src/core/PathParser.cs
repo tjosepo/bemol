@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Bemol.Core {
-    public class PathParser {
+    internal class PathParser {
         private readonly List<string> PathParamNames;
         private readonly string MatchRegex;
         private readonly string PathParamRegex;
 
-        public PathParser(string path, bool ignoreTrailingSlash) {
+        internal PathParser(string path, bool ignoreTrailingSlash) {
             var segments = path.Split("/")
                     .Where(segment => segment.Length > 0)
                     .Select<string, PathSegment>(segment => {
@@ -30,9 +30,9 @@ namespace Bemol.Core {
             PathParamRegex = MatchRegex.Replace("[^/]+?", "([^/]+?)");
         }
 
-        public bool Matches(string url) => Regex.Match(url, MatchRegex).Success;
+        internal bool Matches(string url) => Regex.Match(url, MatchRegex).Success;
 
-        public Dictionary<string, string> ExtractPathParams(string url) {
+        internal Dictionary<string, string> ExtractPathParams(string url) {
             return PathParamNames.ToDictionary(
                 (key) => key,
                 (value) => Regex.Match(url, PathParamRegex).Groups.Values.Last().Value
@@ -40,27 +40,27 @@ namespace Bemol.Core {
         }
     }
 
-    abstract class PathSegment {
-        public abstract string AsRegexString();
+    internal abstract class PathSegment {
+        internal abstract string AsRegexString();
 
-        public class Normal : PathSegment {
-            public readonly string content;
+        internal class Normal : PathSegment {
+            internal readonly string content;
 
-            public Normal(string content) => this.content = content;
+            internal Normal(string content) => this.content = content;
 
-            override public string AsRegexString() => content;
+            override internal string AsRegexString() => content;
         }
 
-        public class Parameter : PathSegment {
-            public readonly string name;
+        internal class Parameter : PathSegment {
+            internal readonly string name;
 
-            public Parameter(string name) => this.name = name;
+            internal Parameter(string name) => this.name = name;
 
-            override public string AsRegexString() => "[^/]+?";     // Accepting everything except slash
+            override internal string AsRegexString() => "[^/]+?";     // Accepting everything except slash
         }
 
-        public class Wildcard : PathSegment {
-            override public string AsRegexString() => ".*?";    // Accept everything
+        internal class Wildcard : PathSegment {
+            override internal string AsRegexString() => ".*?";    // Accept everything
         }
     }
 }

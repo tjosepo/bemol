@@ -6,15 +6,14 @@ using Bemol.Core;
 using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
-    public class StaticFilesHandler {
-
+    internal class StaticFilesHandler {
         private readonly BemolConfig Config;
 
-        public StaticFilesHandler(BemolConfig config) {
+        internal StaticFilesHandler(BemolConfig config) {
             Config = config;
         }
 
-        public void Handle(Context ctx) {
+        internal void Handle(Context ctx) {
             try {
                 var path = ctx.Path();
                 if (path == "/") path = "/index.html";
@@ -32,14 +31,14 @@ namespace Bemol.Http {
             }
         }
 
-        private string GetTargetPath(string path) {
+        internal string GetTargetPath(string path) {
             var currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-            var publicFolder = BemolUtil.NormalizePath(Config.PublicFolder);
+            var staticFolder = BemolUtil.NormalizePath(Config.StaticFolder);
             var requestPath = BemolUtil.NormalizePath(path);
             var separator = Path.DirectorySeparatorChar;
-            return $"{currentDirectory}{publicFolder}{separator}{requestPath}";
+            return $"{currentDirectory}{staticFolder}{separator}{requestPath}";
         }
 
-        private string GetContentType(string extension) => MimeTypeMap.GetMimeType(extension);
+        internal string GetContentType(string extension) => MimeTypeMap.GetMimeType(extension);
     }
 }

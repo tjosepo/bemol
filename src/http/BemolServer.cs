@@ -9,10 +9,10 @@ using Bemol.Http.Util;
 using Bemol.Http.Exceptions;
 
 namespace Bemol.Http {
-    public class BemolServer {
-        public int Port = 7000;
-        public string Host = "localhost";
-        public bool Started = false;
+    internal class BemolServer {
+        internal int Port = 7000;
+        internal string Host = "localhost";
+        internal bool Started = false;
 
         private readonly BemolConfig Config;
         private readonly BemolRenderer Renderer;
@@ -21,13 +21,13 @@ namespace Bemol.Http {
         private readonly ErrorMapper ErrorMapper = new ErrorMapper();
         private readonly ExceptionMapper ExceptionMapper = new ExceptionMapper();
 
-        public BemolServer(BemolConfig config) {
+        internal BemolServer(BemolConfig config) {
             Config = config;
             Renderer = new BemolRenderer(config);
             StaticFilesHandler = new StaticFilesHandler(config);
         }
 
-        public void Start() {
+        internal void Start() {
             new Thread(() => {
                 var listener = new HttpListener();
                 listener.Prefixes.Add($"http://{Host}:{Port}{Config.ContextPath}");
@@ -39,7 +39,7 @@ namespace Bemol.Http {
                 while (Started) {
                     var rawCtx = listener.GetContext();
                     new Task(() => {
-                        var ctx = new Context(rawCtx);
+                        var ctx = new Context(rawCtx, Config);
                         HandleRequest(ctx);
                         SendResponse(ctx);
                     }).Start();
@@ -47,8 +47,7 @@ namespace Bemol.Http {
             }).Start();
         }
 
-        public void HandleRequest(Context ctx) {
-            ctx.Renderer = Renderer;
+        internal void HandleRequest(Context ctx) {
             ctx.ContentType(Config.DefaultContentType);
 
             TryBeforeHandlers(ctx);
@@ -62,11 +61,11 @@ namespace Bemol.Http {
             if (Config.EnableCorsForAllOrigins) ctx.Header("Access-Control-Allow-Origin", "*");
         }
 
-        public void AddHandler(HandlerType type, string path, Handler handler) {
+        internal void AddHandler(HandlerType type, string path, Handler handler) {
             Matcher.Add(new HandlerEntry(type, path, Config.IgnoreTrailingSlashes, handler));
         }
 
-        public void AddErrorHandler(int statusCode, Handler handler) {
+        internal void AddErrorHandler(int statusCode, Handler handler) {
             ErrorMapper.Add(statusCode, handler);
         }
 

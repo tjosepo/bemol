@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">  
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <StartupObject>Debug</StartupObject>
+  </PropertyGroup>
+
+  <!-- Include static folders in bin -->
+  <ItemGroup> 
+    <Watch Include="resources/**;public/**" />
+    <None Include="resources/**;public/**"> 
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
+    </None> 
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Bemol.csproj" />
+  </ItemGroup>
+</Project>

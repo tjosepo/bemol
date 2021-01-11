@@ -1,5 +1,5 @@
 namespace Bemol.Http {
-    public enum HandlerType {
+    internal enum HandlerType {
         GET, POST, PUT, PATCH, DELETE, HEAD, TRACE, CONNECT, OPTIONS, BEFORE, AFTER, INVALID
     }
 }

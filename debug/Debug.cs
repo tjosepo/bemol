@@ -18,7 +18,6 @@ public class Debug {
             ctx.Result($"uploaded: {file.Filename} ({file.Size / 1024}kB)");
         });
 
-
         app.Get("/add", ctx => {
             ctx.Cookie("Added", "True");
             ctx.Html($"Cookie added!");
