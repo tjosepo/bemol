@@ -2,13 +2,14 @@ using System;
 
 using Bemol.Core;
 using Bemol.Http;
+using Bemol.Core.Server.Kestrel;
 
 namespace Bemol {
     public class App {
         private readonly BemolServer Server;
         private readonly BemolConfig Config = new BemolConfig();
 
-        public App() => Server = new BemolServer(Config);
+        public App() => Server = new KServer(Config);
 
         public App(Action<BemolConfig> config) : this() => config(Config);
 

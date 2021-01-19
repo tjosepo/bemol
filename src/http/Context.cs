@@ -14,8 +14,8 @@ namespace Bemol.Http {
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
 
-        private readonly HttpListenerRequest Request;
-        private readonly HttpListenerResponse Response;
+        private readonly IRequest Request;
+        private readonly IResponse Response;
         private readonly BemolRenderer Renderer;
 
         private Form? Form;
@@ -25,9 +25,9 @@ namespace Bemol.Http {
         private byte[] BodyArray = null!;  // Because byte?[] to byte[] conversion is a pain
         private byte[] ResultArray = null!;  // Because byte?[] to byte[] conversion is a pain
 
-        internal Context(HttpListenerContext ctx, BemolConfig config) {
-            Request = ctx.Request;
-            Response = ctx.Response;
+        internal Context(IRequest request, IResponse response, BemolConfig config) {
+            Request = request;
+            Response = response;
             Renderer = new BemolRenderer(config);
         }
 
@@ -96,13 +96,13 @@ namespace Bemol.Http {
         }
 
         /// <summary> Gets the request content length. </summary>
-        public long ContentLength() => Request.ContentLength64;
+        public long? ContentLength() => Request.ContentLength;
 
         /// <summary> Gets the request content type, or null. </summary>
         public string? ContentType() => Request.ContentType;
 
         /// <summary> Gets a request cookie by name, or null. </summary>
-        public string? Cookie(string name) => Request.Cookies[name]?.Value;
+        public string? Cookie(string name) => Request.Cookies[name];
 
         /// <summary> Gets a request header by name, or null. </summary>
         public string? Header(string header) => Header()[header];
@@ -111,16 +111,16 @@ namespace Bemol.Http {
         public NameValueCollection Header() => Request.Headers;
 
         /// <summary> Gets the request ip. </summary>
-        public string Ip() => Request.UserHostAddress;
+        public string Ip() => Request.Ip;
 
         /// <summary> Returns true if request is multipart/form-data </summary>
         public bool IsMultipartFormData() => Request.ContentType?.Contains("multipart/form-data") ?? false;
 
         /// <summary> Gets the request method. </summary>
-        public string Method() => Request.HttpMethod;
+        public string Method() => Request.Method;
 
         /// <summary> Gets the request absolute path. </summary>
-        public string Path() => Request.Url!.AbsolutePath;
+        public string Path() => Request.Path;
 
         /// <summary> Gets a comma separated string with all for params of the specified key, or null. </summary>
         public string? QueryParam(string key) => QueryMap()[key];
@@ -132,7 +132,7 @@ namespace Bemol.Http {
         }
 
         /// <summary> Gets the request query string. </summary>
-        public string QueryString() => Request.Url!.Query;
+        public string QueryString() => Request.Query;
 
         /// <summary> Gets the request user agent. </summary>
         public string UserAgent() => Request.UserAgent;

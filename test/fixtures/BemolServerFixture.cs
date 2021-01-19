@@ -22,7 +22,9 @@ namespace Bemol.Test.Fixtures {
         public Context GetContext(ClientHandler handler) {
             handler.Invoke(Client);
             var rawCtx = Listener.GetContext();
-            var ctx = new Context(rawCtx, new Core.BemolConfig());
+            var request = new Bemol.Core.Server.HttpListener.HttpListernerRequest(rawCtx);
+            var response = new Bemol.Core.Server.HttpListener.HttpListenerResponse(rawCtx);
+            var ctx = new Context(request, response, new Core.BemolConfig());
             return ctx;
         }
 

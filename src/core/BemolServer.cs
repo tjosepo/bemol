@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Bemol.Core;
+using Bemol.Http;
 using Bemol.Http.Util;
 using Bemol.Http.Exceptions;
 
-namespace Bemol.Http {
+namespace Bemol.Core {
     internal class BemolServer {
         internal int Port = 7000;
         internal string Host = "localhost";
@@ -27,21 +27,22 @@ namespace Bemol.Http {
             StaticFilesHandler = new StaticFilesHandler(config);
         }
 
-        internal void Start() {
+        internal virtual void Start() {
             new Thread(() => {
                 var listener = new HttpListener();
                 listener.Prefixes.Add($"http://{Host}:{Port}{Config.ContextPath}");
                 listener.Start();
 
-                Console.Clear();
+                // Console.Clear();
                 Console.WriteLine($"Listening on http://{Host}:{Port}{Config.ContextPath}");
 
                 while (Started) {
                     var rawCtx = listener.GetContext();
                     new Task(() => {
-                        var ctx = new Context(rawCtx, Config);
+                        var request = new Bemol.Core.Server.HttpListener.HttpListernerRequest(rawCtx);
+                        var response = new Bemol.Core.Server.HttpListener.HttpListenerResponse(rawCtx);
+                        var ctx = new Context(request, response, Config);
                         HandleRequest(ctx);
-                        SendResponse(ctx);
                     }).Start();
                 }
             }).Start();
@@ -59,6 +60,8 @@ namespace Bemol.Http {
             TryAfterHandlers(ctx);
 
             if (Config.EnableCorsForAllOrigins) ctx.Header("Access-Control-Allow-Origin", "*");
+
+            SendResponse(ctx);
         }
 
         internal void AddHandler(HandlerType type, string path, Handler handler) {
@@ -109,6 +112,7 @@ namespace Bemol.Http {
         private void SendResponse(Context ctx) {
             var resultStream = ctx.ResultStream();
             resultStream.Write(ctx.ResultBytes());
+            resultStream.Dispose();
             resultStream.Close();
         }
     }
