@@ -10,10 +10,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
-  </ItemGroup>
-  
+  </ItemGroup> -->
+
   <ItemGroup>
     <PackageReference Include="DotLiquid" Version="2.0.366" />
     <PackageReference Include="MimeTypeMapOfficial" Version="1.0.14" />

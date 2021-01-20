@@ -2,16 +2,15 @@ using System;
 
 using Bemol.Core;
 using Bemol.Http;
-using Bemol.Core.Server.Kestrel;
 
 namespace Bemol {
     public class App {
         private readonly BemolServer Server;
         private readonly BemolConfig Config = new BemolConfig();
 
-        public App() => Server = new KServer(Config);
+        public App() => Server = new BemolServer(Config);
 
-        public App(Action<BemolConfig> config) : this() => config(Config);
+        public App(Action<BemolConfig> config) : this() => config.Invoke(Config);
 
         /// <summary> Starts the application instance on the default port (7000). </summary>
         public App Start() {
@@ -50,6 +49,7 @@ namespace Bemol {
         // HTTP
         // ********************************************************************************************
 
+        /// <summary> Adds an error handler for the specified status code. </summary>
         public App Error(int statusCode, Handler handler) {
             Server.AddErrorHandler(statusCode, handler);
             return this;
@@ -61,9 +61,51 @@ namespace Bemol {
             return this;
         }
 
+        /// <summary> Adds a HEAD request handler for the specified path to the instance. </summary>
+        public App Head(string path, Handler handler) {
+            Server.AddHandler(HandlerType.HEAD, path, handler);
+            return this;
+        }
+
         /// <summary> Adds a POST request handler for the specified path to the instance. </summary>
         public App Post(string path, Handler handler) {
             Server.AddHandler(HandlerType.POST, path, handler);
+            return this;
+        }
+
+        /// <summary> Adds a PUT request handler for the specified path to the instance. </summary>
+        public App Put(string path, Handler handler) {
+            Server.AddHandler(HandlerType.PUT, path, handler);
+            return this;
+        }
+
+        /// <summary> Adds a DELETE request handler for the specified path to the instance. </summary>
+        public App Delete(string path, Handler handler) {
+            Server.AddHandler(HandlerType.DELETE, path, handler);
+            return this;
+        }
+
+        /// <summary> Adds a CONNECT request handler for the specified path to the instance. </summary>
+        public App Connect(string path, Handler handler) {
+            Server.AddHandler(HandlerType.CONNECT, path, handler);
+            return this;
+        }
+
+        /// <summary> Adds a OPTIONS request handler for the specified path to the instance. </summary>
+        public App Options(string path, Handler handler) {
+            Server.AddHandler(HandlerType.OPTIONS, path, handler);
+            return this;
+        }
+
+        /// <summary> Adds a TRACE request handler for the specified path to the instance. </summary>
+        public App Trace(string path, Handler handler) {
+            Server.AddHandler(HandlerType.TRACE, path, handler);
+            return this;
+        }
+
+        /// <summary> Adds a PATCH request handler for the specified path to the instance. </summary>
+        public App Patch(string path, Handler handler) {
+            Server.AddHandler(HandlerType.PATCH, path, handler);
             return this;
         }
 

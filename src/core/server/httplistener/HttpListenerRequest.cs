@@ -5,10 +5,10 @@ using System.Collections.Specialized;
 using Bemol.Http;
 
 namespace Bemol.Core.Server.HttpListener {
-    public sealed class HttpListernerRequest : IRequest {
+    public sealed class HttpListenerRequest : IRequest {
         private readonly System.Net.HttpListenerRequest Request;
 
-        public HttpListernerRequest(HttpListenerContext context) {
+        public HttpListenerRequest(HttpListenerContext context) {
             Request = context.Request;
         }
 

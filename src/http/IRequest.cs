@@ -2,7 +2,7 @@ using System.IO;
 using System.Collections.Specialized;
 
 namespace Bemol.Http {
-    interface IRequest {
+    public interface IRequest {
         Stream InputStream { get; }
         long? ContentLength { get; }
         string? ContentType { get; }

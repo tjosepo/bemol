@@ -13,7 +13,6 @@ namespace Bemol.Http {
 
     /// <summary> Provides access to functions for handling the request and response.</summary>
     public class Context {
-
         private readonly IRequest Request;
         private readonly IResponse Response;
         private readonly BemolRenderer Renderer;

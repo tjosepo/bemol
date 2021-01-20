@@ -2,7 +2,7 @@ using System.IO;
 using System.Net;
 
 namespace Bemol.Http {
-    interface IResponse {
+    public interface IResponse {
         Stream OutputStream { get; }
         string? ContentType { set; get; }
         int StatusCode { set; get; }

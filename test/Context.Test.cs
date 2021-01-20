@@ -129,6 +129,7 @@ namespace Bemol.Test {
             var ctx = Server.GetContext(client => {
                 client.DefaultRequestHeaders.Add("Cookie", $"{name}={value}");
                 client.GetAsync("/");
+                client.DefaultRequestHeaders.Remove("Cookie");
             });
             Assert.Equal(value, ctx.Cookie(name));
         }
@@ -145,6 +146,7 @@ namespace Bemol.Test {
             var ctx = Server.GetContext(client => {
                 client.DefaultRequestHeaders.Add(name, value);
                 client.GetAsync("/");
+                client.DefaultRequestHeaders.Remove(name);
             });
             Assert.Equal(value, ctx.Header(name));
         }
@@ -196,13 +198,17 @@ namespace Bemol.Test {
             var ctx = Server.GetContext(client => {
                 client.DefaultRequestHeaders.Add("User-Agent", "Foo");
                 client.GetAsync("/");
+                client.DefaultRequestHeaders.Remove("User-Agent");
             });
             Assert.Equal("Foo", ctx.UserAgent());
         }
 
         [Fact]
         public void UserAgent_IsNull_Equal() {
-            var ctx = Server.GetContext(client => client.GetAsync("/"));
+            var ctx = Server.GetContext(client => {
+                client.DefaultRequestHeaders.Remove("User-Agent");
+                client.GetAsync("/");
+            });
             Assert.Null(ctx.UserAgent());
         }
 

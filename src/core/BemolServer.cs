@@ -39,7 +39,7 @@ namespace Bemol.Core {
                 while (Started) {
                     var rawCtx = listener.GetContext();
                     new Task(() => {
-                        var request = new Bemol.Core.Server.HttpListener.HttpListernerRequest(rawCtx);
+                        var request = new Bemol.Core.Server.HttpListener.HttpListenerRequest(rawCtx);
                         var response = new Bemol.Core.Server.HttpListener.HttpListenerResponse(rawCtx);
                         var ctx = new Context(request, response, Config);
                         HandleRequest(ctx);
