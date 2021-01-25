@@ -16,10 +16,10 @@ namespace Bemol.Http {
         internal void Handle(Context ctx) {
             try {
                 var path = ctx.Path();
-                if (path == "/") path = "/index.html";
-
                 var target = GetTargetPath(path);
-                if (!File.Exists(target)) return;
+                if (!File.Exists(target)) {
+                    return;
+                }
 
                 var bytes = File.ReadAllBytes(target);
                 var extension = Path.GetExtension(target);
@@ -36,6 +36,8 @@ namespace Bemol.Http {
             var staticFolder = BemolUtil.NormalizePath(Config.StaticFolder);
             var requestPath = BemolUtil.NormalizePath(path);
             var separator = Path.DirectorySeparatorChar;
+
+            if (!requestPath.Contains('.')) requestPath += $"{separator}index.html";
             return $"{currentDirectory}{staticFolder}{separator}{requestPath}";
         }
 

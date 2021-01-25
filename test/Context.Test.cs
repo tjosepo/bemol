@@ -6,7 +6,9 @@ using System.Collections.Generic;
 
 using Xunit;
 using Bemol.Test.Fixtures;
+using Bemol.Http;
 using Bemol.Http.Exceptions;
+using Bemol.Http.Util;
 
 namespace Bemol.Test {
 
@@ -67,11 +69,11 @@ namespace Bemol.Test {
         }
 
         [Fact]
-        public void BodyAsClass_Equal() {
+        public void Body_AsClass_Equal() {
             var user = new User();
             HttpContent content = JsonContent.Create(user); // type has to be HttpContent, else it'll hang indefinitely
             var ctx = Server.GetContext(client => client.PostAsJsonAsync("/", content));
-            var returned = ctx.BodyAsClass<User>();
+            var returned = ctx.Body<User>();
             Assert.Equal(user.Age, returned.Age);
             Assert.Equal(user.Name, returned.Name);
         }
@@ -79,7 +81,7 @@ namespace Bemol.Test {
         [Fact]
         public void BodyAsClass_NotValid() {
             var ctx = Server.GetContext(client => client.PostAsync("/", null));
-            Assert.Throws<BadRequestException>(() => ctx.BodyAsClass<User>());
+            Assert.Throws<BadRequestException>(() => ctx.Body<User>());
         }
 
         [Fact]
@@ -107,6 +109,52 @@ namespace Bemol.Test {
             var formData = new FormUrlEncodedContent(form);
             var ctx = Server.GetContext(client => client.PostAsync("/", formData));
             Assert.Equal("bar,baz", ctx.FormParam("foo"));
+        }
+
+        [Theory]
+        [InlineData("/:name", "name", "/foo", "foo")]
+        [InlineData("/:name/settings", "name", "/foo/settings", "foo")]
+        public void PathParam_AsString_Equal(string path, string paramName, string requestPath, string result) {
+            var entry = new HandlerEntry("GET", path, true, null);
+            var ctx = Server.GetContext(client => client.GetAsync(requestPath));
+            ctx = ContextUtil.Update(ctx, entry);
+            Assert.Equal(result, ctx.PathParam(paramName));
+        }
+
+        [Fact]
+        public void PathParam_AsString_Throw() {
+            var ctx = Server.GetContext(client => client.GetAsync("/"));
+            Assert.Throws<InternalServerErrorException>(() => ctx.PathParam("foo"));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(100)]
+        public void PathParam_AsInt_Equal(int id) {
+            var entry = new HandlerEntry("GET", "/:id", true, null);
+            var ctx = Server.GetContext(client => client.GetAsync($"/{id}"));
+            ctx = ContextUtil.Update(ctx, entry);
+            Assert.Equal(id, ctx.PathParam<int>("id"));
+        }
+
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(21.5)]
+        [InlineData(100)]
+        public void PathParam_AsFloat_Equal(int temperature) {
+            var entry = new HandlerEntry("GET", "/:temperature", true, null);
+            var ctx = Server.GetContext(client => client.GetAsync($"/{temperature}"));
+            ctx = ContextUtil.Update(ctx, entry);
+            Assert.Equal(temperature, ctx.PathParam<float>("temperature"));
+        }
+
+        [Fact]
+        public void PathParam_AsInt_Throws() {
+            var entry = new HandlerEntry("GET", "/:id", true, null);
+            var ctx = Server.GetContext(client => client.GetAsync($"/foo"));
+            ctx = ContextUtil.Update(ctx, entry);
+            Assert.Throws<BadRequestException>(() => ctx.PathParam<int>("id"));
         }
 
         [Fact]
@@ -176,6 +224,20 @@ namespace Bemol.Test {
         public void Path_Equal(string path) {
             var ctx = Server.GetContext(client => client.GetAsync(path));
             Assert.Equal(path, ctx.Path());
+        }
+
+        [Theory]
+        [InlineData("/?foo=bar", "foo", "bar")]
+        [InlineData("/?foo=bar&foo=baz", "foo", "bar,baz")]
+        public void QueryParam_Equal(string url, string key, string value) {
+            var ctx = Server.GetContext(client => client.GetAsync(url));
+            Assert.Equal(value, ctx.QueryParam(key));
+        }
+
+        [Fact]
+        public void QueryParam_Null() {
+            var ctx = Server.GetContext(client => client.GetAsync("/"));
+            Assert.Null(ctx.QueryParam("foo"));
         }
 
         [Theory]

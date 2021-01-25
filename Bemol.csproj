@@ -1,14 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Bemol</PackageId>
-    <Version>0.1.4</Version>
-    <Authors>Tommy Josepovic</Authors>
-    <IsPackable>true</IsPackable>
     <TargetFramework>net5.0</TargetFramework>
+    <PackageId>Bemol</PackageId>
+    <Title>Bemol</Title>
+    <Version>1.0.0-alpha</Version>
+    <Description>A simple web framework for C#</Description>
+    <Authors>Tommy Josepovic</Authors>
+    <PackageIcon>icon256.png</PackageIcon>
+    <IsPackable>true</IsPackable>
     <DefaultItemExcludes>$(DefaultItemExcludes);test\**;debug\**</DefaultItemExcludes>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="nuget/icon256.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <!-- <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />

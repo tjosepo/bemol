@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -52,13 +53,12 @@ namespace Bemol.Http {
 
         /// <summary> 
         /// Maps a JSON body to a class using JsonSerializer. 
-        /// Throws <c>BadRequestException</c> if the object cannot be mapped. 
         /// </summary>
         /// <returns> The mapped object </returns>
-        public T? BodyAsClass<T>() {
-            string json = Body();
+        /// <exception cref="BadRequestException">Thrown when the body cannot be converted to <paramref name="T" /></exception>
+        public T? Body<T>() {
             try {
-                return JsonSerializer.Deserialize<T>(json);
+                return JsonSerializer.Deserialize<T>(Body());
             } catch (JsonException) {
                 throw new BadRequestException();
             }
@@ -79,19 +79,33 @@ namespace Bemol.Http {
             return value ?? defaultValue;
         }
 
-        /// <summary> Gets a collection with all the form param keys and values </summary>
+        /// <summary> Gets a collection with all the form param keys and values. </summary>
         public NameValueCollection FormParam() {
             Form ??= new Form(this);
             return Form.Parameters;
         }
 
         /// <summary> 
-        /// Gets a path param by name. 
-        /// Throws <c>InternalServerErrorException</c> if the path param cannot be found. 
+        /// Gets a path param by name.
         /// </summary>
+        /// <exception cref="InternalServerErrorException">Thrown when the path param cannot be found.</exception>
         public string PathParam(string key) {
+            if (PathParamDict is null) throw new InternalServerErrorException("Cannot use 'PathParam' method inside of the current context.");
             if (!PathParamDict!.ContainsKey(key)) throw new InternalServerErrorException($"'{key}' is not a valid path-param for '{Path()}'.");
             return PathParamDict[key];
+        }
+
+        /// <summary> 
+        /// Gets a path param of type <paramref name="T"/> by name.
+        /// </summary>
+        /// <exception cref="BadRequestException">Thrown when the path param cannot be converted to <paramref name="T" /></exception>
+        /// <exception cref="InternalServerErrorException">Thrown when the path param cannot be found.</exception>
+        public T PathParam<T>(string key) {
+            try {
+                return (T)Convert.ChangeType(PathParam(key), typeof(T));
+            } catch (FormatException) {
+                throw new BadRequestException();
+            }
         }
 
         /// <summary> Gets the request content length. </summary>
@@ -191,10 +205,10 @@ namespace Bemol.Http {
         /// <summary> Removes cookie specified by name. </summary>
         public Context RemoveCookie(string name) => Cookie(new Cookie(name, null) { Expired = true });
 
-        /// <summary> 
+        /// <summary>
         /// Sets context result to specified html string 
         /// and sets content-type to <c>text/html</c>.
-        /// </summary>  
+        /// </summary>
         public Context Html(string html) => Result(html).ContentType("text/html");
 
         /// <summary>

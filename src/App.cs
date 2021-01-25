@@ -55,78 +55,42 @@ namespace Bemol {
             return this;
         }
 
-        /// <summary> Adds a GET request handler for the specified path to the instance. </summary>
-        public App Get(string path, Handler handler) {
-            Server.AddHandler(HandlerType.GET, path, handler);
+        /// <summary> Adds a custom request handler for the specified method and path to the instance. </summary>
+        public App Custom(string method, string path, Handler handler) {
+            Server.AddHandler(method.ToUpper(), path, handler);
             return this;
         }
+
+        /// <summary> Adds a GET request handler for the specified path to the instance. </summary>
+        public App Get(string path, Handler handler) => Custom("GET", path, handler);
 
         /// <summary> Adds a HEAD request handler for the specified path to the instance. </summary>
-        public App Head(string path, Handler handler) {
-            Server.AddHandler(HandlerType.HEAD, path, handler);
-            return this;
-        }
+        public App Head(string path, Handler handler) => Custom("HEAD", path, handler);
 
         /// <summary> Adds a POST request handler for the specified path to the instance. </summary>
-        public App Post(string path, Handler handler) {
-            Server.AddHandler(HandlerType.POST, path, handler);
-            return this;
-        }
+        public App Post(string path, Handler handler) => Custom("POST", path, handler);
 
         /// <summary> Adds a PUT request handler for the specified path to the instance. </summary>
-        public App Put(string path, Handler handler) {
-            Server.AddHandler(HandlerType.PUT, path, handler);
-            return this;
-        }
-
-        /// <summary> Adds a DELETE request handler for the specified path to the instance. </summary>
-        public App Delete(string path, Handler handler) {
-            Server.AddHandler(HandlerType.DELETE, path, handler);
-            return this;
-        }
-
-        /// <summary> Adds a CONNECT request handler for the specified path to the instance. </summary>
-        public App Connect(string path, Handler handler) {
-            Server.AddHandler(HandlerType.CONNECT, path, handler);
-            return this;
-        }
-
-        /// <summary> Adds a OPTIONS request handler for the specified path to the instance. </summary>
-        public App Options(string path, Handler handler) {
-            Server.AddHandler(HandlerType.OPTIONS, path, handler);
-            return this;
-        }
-
-        /// <summary> Adds a TRACE request handler for the specified path to the instance. </summary>
-        public App Trace(string path, Handler handler) {
-            Server.AddHandler(HandlerType.TRACE, path, handler);
-            return this;
-        }
+        public App Put(string path, Handler handler) => Custom("PUT", path, handler);
 
         /// <summary> Adds a PATCH request handler for the specified path to the instance. </summary>
-        public App Patch(string path, Handler handler) {
-            Server.AddHandler(HandlerType.PATCH, path, handler);
-            return this;
-        }
+        public App Patch(string path, Handler handler) => Custom("PATCH", path, handler);
+
+        /// <summary> Adds a DELETE request handler for the specified path to the instance. </summary>
+        public App Delete(string path, Handler handler) => Custom("DELETE", path, handler);
 
         // ********************************************************************************************
         // BEFORE / AFTER
         // ********************************************************************************************
 
         /// <summary> Adds a BEFORE request handler for the specified path to the instance. </summary>
-        public App Before(string path, Handler handler) {
-            Server.AddHandler(HandlerType.BEFORE, path, handler);
-            return this;
-        }
+        public App Before(string path, Handler handler) => Custom("BEFORE", path, handler);
 
         /// <summary> Adds a BEFORE request handler for all routes in the instance. </summary>
         public App Before(Handler handler) => Before("*", handler);
 
         /// <summary> Adds an AFTER request handler for the specified path to the instance. </summary>
-        public App After(string path, Handler handler) {
-            Server.AddHandler(HandlerType.AFTER, path, handler);
-            return this;
-        }
+        public App After(string path, Handler handler) => Custom("AFTER", path, handler);
 
         /// <summary> Adds an AFTER request handler for all routes in the instance. </summary>
         public App After(Handler handler) => After("*", handler);

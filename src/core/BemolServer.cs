@@ -1,8 +1,8 @@
 using System;
 using System.Net;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using Bemol.Http;
 using Bemol.Http.Util;
@@ -64,8 +64,8 @@ namespace Bemol.Core {
             SendResponse(ctx);
         }
 
-        internal void AddHandler(HandlerType type, string path, Handler handler) {
-            Matcher.Add(new HandlerEntry(type, path, Config.IgnoreTrailingSlashes, handler));
+        internal void AddHandler(string method, string path, Handler handler) {
+            Matcher.Add(new HandlerEntry(method, path, Config.IgnoreTrailingSlashes, handler));
         }
 
         internal void AddErrorHandler(int statusCode, Handler handler) {
@@ -77,19 +77,12 @@ namespace Bemol.Core {
         }
 
         private void TryBeforeHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
-            var beforeEntries = Matcher.FindEntries(HandlerType.BEFORE, ctx.Path());
-            beforeEntries.ForEach(entry => {
-                entry.Handle(ContextUtil.Update(ctx, entry));
-            });
+            TryHandlers("BEFORE", ctx);
         });
 
         private void TryEndpointHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
-            var type = Enum.Parse<HandlerType>(ctx.Method());
-            var entries = Matcher.FindEntries(type, ctx.Path());
-            if (entries.Count == 0) throw new NotFoundException();
-
-            var entry = entries.Last();
-            entry.Handle(ContextUtil.Update(ctx, entry));
+            var entries = TryHandlers(ctx.Method(), ctx);
+            if (entries == null || entries?.Count == 0) throw new NotFoundException();
         });
 
         private void TryStaticFiles(Context ctx) => TryWithExceptionMapper(ctx, () => {
@@ -103,11 +96,16 @@ namespace Bemol.Core {
         });
 
         private void TryAfterHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
-            var afterEntries = Matcher.FindEntries(HandlerType.AFTER, ctx.Path());
-            afterEntries.ForEach(entry => {
+            TryHandlers("AFTER", ctx);
+        });
+
+        private List<HandlerEntry>? TryHandlers(string method, Context ctx) {
+            var entries = Matcher.FindEntries(method, ctx.Path());
+            entries?.ForEach(entry => {
                 entry.Handle(ContextUtil.Update(ctx, entry));
             });
-        });
+            return entries;
+        }
 
         private void SendResponse(Context ctx) {
             var resultStream = ctx.ResultStream();
