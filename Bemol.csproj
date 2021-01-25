@@ -2,19 +2,23 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <PackageId>Bemol</PackageId>
     <Title>Bemol</Title>
     <Version>1.0.0-alpha</Version>
-    <Description>A simple web framework for C#</Description>
+    <Description>A simple web framework for C#.</Description>
     <Authors>Tommy Josepovic</Authors>
-    <PackageIcon>icon256.png</PackageIcon>
     <IsPackable>true</IsPackable>
     <DefaultItemExcludes>$(DefaultItemExcludes);test\**;debug\**</DefaultItemExcludes>
     <Nullable>enable</Nullable>
+    <PackageId>Bemol</PackageId>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>icon256.png</PackageIcon>
+    <PackageProjectUrl>https://bemol-docs.web.app/</PackageProjectUrl>
   </PropertyGroup>
 
+  <!-- Nuget files -->
   <ItemGroup>
-    <None Include="nuget/icon256.png" Pack="true" PackagePath="" />
+    <None Include="LICENSE" Pack="true" PackagePath="" />
+    <None Include="icon256.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <!-- <ItemGroup>
