@@ -51,22 +51,6 @@ namespace Bemol.Test {
             Assert.Equal("{\"name\":\"John\",\"age\":25}", ctx.Body());
         }
 
-        [Fact]
-        public void Body_FormData_Equal() {
-            var form = new List<KeyValuePair<string, string>>();
-            form.Add(KeyValuePair.Create("foo", "bar"));
-            form.Add(KeyValuePair.Create("baz", "foobar"));
-            var formData = new FormUrlEncodedContent(form);
-            var ctx = Server.GetContext(client => client.PostAsync("/", formData));
-            Assert.Equal("foo=bar&baz=foobar", ctx.Body());
-        }
-
-        [Fact]
-        public void BodyAsBytes_Equal() {
-            var content = new StringContent("Hello world!");
-            var ctx = Server.GetContext(client => client.PostAsync("/", content));
-            Assert.Equal(Encoding.UTF8.GetBytes("Hello world!"), ctx.BodyAsBytes());
-        }
 
         [Fact]
         public void Body_AsClass_Equal() {
@@ -85,6 +69,23 @@ namespace Bemol.Test {
         }
 
         [Fact]
+        public void Body_FormData_Equal() {
+            var form = new List<KeyValuePair<string, string>>();
+            form.Add(KeyValuePair.Create("foo", "bar"));
+            form.Add(KeyValuePair.Create("baz", "foobar"));
+            var formData = new FormUrlEncodedContent(form);
+            var ctx = Server.GetContext(client => client.PostAsync("/", formData));
+            Assert.Equal("foo=bar&baz=foobar", ctx.Body());
+        }
+
+        [Fact]
+        public void BodyAsBytes_Equal() {
+            var content = new StringContent("Hello world!");
+            var ctx = Server.GetContext(client => client.PostAsync("/", content));
+            Assert.Equal(Encoding.UTF8.GetBytes("Hello world!"), ctx.BodyAsBytes());
+        }
+
+        [Fact]
         public void FormParam_Equal() {
             var form = new List<KeyValuePair<string, string>>();
             form.Add(KeyValuePair.Create("foo", "bar"));
@@ -93,6 +94,23 @@ namespace Bemol.Test {
             var ctx = Server.GetContext(client => client.PostAsync("/", formData));
             Assert.Equal("bar", ctx.FormParam("foo"));
             Assert.Equal("foobarzé", ctx.FormParam("baz"));
+        }
+
+        [Fact]
+        public void FormParam_AsInt_Equal() {
+            var form = new List<KeyValuePair<string, string>>();
+            form.Add(KeyValuePair.Create("foo", "5"));
+            var formData = new FormUrlEncodedContent(form);
+            var ctx = Server.GetContext(client => client.PostAsync("/", formData));
+            Assert.Equal(5, ctx.FormParam<int>("foo"));
+        }
+
+        [Fact]
+        public void FormParam_AsInt_Null() {
+            var form = new List<KeyValuePair<string, string>>();
+            var formData = new FormUrlEncodedContent(form);
+            var ctx = Server.GetContext(client => client.PostAsync("/", formData));
+            Assert.Throws<BadRequestException>(() => ctx.FormParam<int>("foo"));
         }
 
         [Fact]
@@ -238,6 +256,20 @@ namespace Bemol.Test {
         public void QueryParam_Null() {
             var ctx = Server.GetContext(client => client.GetAsync("/"));
             Assert.Null(ctx.QueryParam("foo"));
+        }
+
+        [Theory]
+        [InlineData("/?foo=16", "foo", 16)]
+        public void QueryParam_AsInt_Equal(string url, string key, int value) {
+            var ctx = Server.GetContext(client => client.GetAsync(url));
+            Assert.Equal(value, ctx.QueryParam<int>(key));
+        }
+
+        [Theory]
+        [InlineData("/?foo=16", "bar")]
+        public void QueryParam_AsInt_Null(string url, string key) {
+            var ctx = Server.GetContext(client => client.GetAsync(url));
+            Assert.Throws<BadRequestException>(() => ctx.QueryParam<int>(key));
         }
 
         [Theory]

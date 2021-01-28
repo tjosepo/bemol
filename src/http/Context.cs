@@ -41,18 +41,8 @@ namespace Bemol.Http {
             return Encoding.UTF8.GetString(bytes);
         }
 
-        /// <summary> Gets the request body as a an array of bytes. </summary>
-        public byte[] BodyAsBytes() {
-            if (BodyArray != null) return BodyArray;
-            using (MemoryStream ms = new MemoryStream()) {
-                Request.InputStream.CopyTo(ms);
-                BodyArray = ms.ToArray();
-                return BodyArray;
-            }
-        }
-
         /// <summary> 
-        /// Maps a JSON body to a class using JsonSerializer. 
+        /// Maps a JSON body to a class using JsonSerializer.
         /// </summary>
         /// <returns> The mapped object </returns>
         /// <exception cref="BadRequestException">Thrown when the body cannot be converted to <paramref name="T" /></exception>
@@ -64,6 +54,16 @@ namespace Bemol.Http {
             }
         }
 
+        /// <summary> Gets the request body as a an array of bytes. </summary>
+        public byte[] BodyAsBytes() {
+            if (BodyArray != null) return BodyArray;
+            using (MemoryStream ms = new MemoryStream()) {
+                Request.InputStream.CopyTo(ms);
+                BodyArray = ms.ToArray();
+                return BodyArray;
+            }
+        }
+
         /// <summary> Gets first <c>UploadedFile</c> for the specified name, or null. </summary>
         public UploadedFile? UploadedFile(string name) {
             Form ??= new Form(this);
@@ -72,6 +72,18 @@ namespace Bemol.Http {
 
         /// <summary> Gets a form param if it exists, else null. </summary>
         public string? FormParam(string key) => FormParam()[key];
+
+        /// <summary> 
+        /// Gets a form param of type <paramref name="T"/> if it exists, else throw.
+        /// </summary>
+        /// <exception cref="BadRequestException">Thrown when the form param cannot be converted to <paramref name="T" /></exception>
+        public T FormParam<T>(string key) {
+            try {
+                return (T)Convert.ChangeType(FormParam(key)!, typeof(T));
+            } catch (Exception) {
+                throw new BadRequestException();
+            }
+        }
 
         /// <summary> Gets a form param if it exists, else a default value (null if not specified explicitly).</summary>
         public string? FormParam(string key, string? defaultValue = null) {
@@ -86,7 +98,7 @@ namespace Bemol.Http {
         }
 
         /// <summary> 
-        /// Gets a path param by name.
+        /// Gets a path param by name if it exists, else throw.
         /// </summary>
         /// <exception cref="InternalServerErrorException">Thrown when the path param cannot be found.</exception>
         public string PathParam(string key) {
@@ -96,7 +108,7 @@ namespace Bemol.Http {
         }
 
         /// <summary> 
-        /// Gets a path param of type <paramref name="T"/> by name.
+        /// Gets a path param of type <paramref name="T"/> by name if it exists, else throw
         /// </summary>
         /// <exception cref="BadRequestException">Thrown when the path param cannot be converted to <paramref name="T" /></exception>
         /// <exception cref="InternalServerErrorException">Thrown when the path param cannot be found.</exception>
@@ -137,6 +149,18 @@ namespace Bemol.Http {
 
         /// <summary> Gets a comma separated string with all for params of the specified key, or null. </summary>
         public string? QueryParam(string key) => QueryMap()[key];
+
+        /// <summary>
+        /// Gets a comma separated string with all for params of the specified key of type <paramref name="T">, or throw.
+        /// </summary>
+        /// <exception cref="BadRequestException">Thrown when the query param cannot be converted to <paramref name="T" /></exception>
+        public T QueryParam<T>(string key) {
+            try {
+                return (T)Convert.ChangeType(QueryParam(key)!, typeof(T));
+            } catch (Exception) {
+                throw new BadRequestException();
+            }
+        }
 
         /// <summary> Gets a collection with all the query param keys and values. </summary>
         public NameValueCollection QueryMap() {
@@ -193,6 +217,12 @@ namespace Bemol.Http {
         /// <summary> Gets the response status. </summary>
         public int Status() => Response.StatusCode;
 
+        /// <summary> Redirects to the specified path. </summary>
+        public Context Redirect(string path) => Redirect(path, 302);
+
+        /// <summary> Redirects to the specified path with specifix HTTP 3XX status code. </summary>
+        public Context Redirect(string path, int statusCode) => Header("Location", path).Status(statusCode);
+
         /// <summary> Sets a cookie with name and value. </summary>
         public Context Cookie(string name, string value) => Cookie(new Cookie(name, value));
 
@@ -214,7 +244,7 @@ namespace Bemol.Http {
         /// <summary>
         /// Serializes object to a JSON-string and sets it as the context result.
         /// Sets content type to <c>application/json</c>.
-        /// </summary>     
+        /// </summary>
         public Context Json(object obj) => Result(JsonSerializer.Serialize(obj)).ContentType("application/json");
 
         /// <summary>
