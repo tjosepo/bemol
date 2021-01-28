@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Title>Bemol</Title>
-    <Version>1.0.0-alpha</Version>
+    <Version>1.1.0-alpha</Version>
     <Description>A simple web framework for C#.</Description>
     <Authors>Tommy Josepovic</Authors>
     <IsPackable>true</IsPackable>
