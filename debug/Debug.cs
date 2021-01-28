@@ -5,7 +5,11 @@ public class Debug {
     public static void Main() {
         App app = new App().Start();
         app.Get("/", ctx => {
-            ctx.Render("/index.liquid");
+            ctx.Redirect("/home");
+        });
+
+        app.Get("/home", ctx => {
+            ctx.Result("Hello home!");
         });
 
         app.Post("/", ctx => {
