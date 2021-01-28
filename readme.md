@@ -3,7 +3,7 @@
 Bemol's main goal is simplicity. You don't have to extend anything, there are no @Annotations, there is no magic; just code.
 
 - Download: https://www.nuget.org/packages/Bemol/
-- Documentation: https://github.com/tommy-josepovic/bemol/wiki
+- Documentation: https://bemol-docs.web.app/
 
 ## Quickstart
 
@@ -12,14 +12,14 @@ Bemol's main goal is simplicity. You don't have to extend anything, there are no
 #### .NET CLI
 
 ```
-dotnet add package Bemol --version 0.1.3
+dotnet add package Bemol --version 1.1.0-alpha
 ```
 
 #### .csproj
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="Bemol" Version="0.1.3" />
+    <PackageReference Include="Bemol" Version="1.1.0-alpha" />
 </ItemGroup>
 ```
 
@@ -69,7 +69,7 @@ app.Put("/todos", ctx => { // map request-body (json) to array of Todos
 App app = new App().Start();
 
 app.Post("/upload", ctx => {
-    var file = ctx.UploadedFile("file")
+    var file = ctx.UploadedFile("file");
     using (var fs = File.Create($"./upload/{file.Filename}")) {
         file.Content.Seek(0, SeekOrigin.Begin);
         file.Content.CopyTo(fs);
@@ -79,6 +79,6 @@ app.Post("/upload", ctx => {
 
 ## Special thanks
 
-- David Åse, for creating [Javalin](https://github.com/tipsy/javalin).
+- David Åse, for creating [Javalin](https://javalin.io/).
 - Blake Mizerany, for creating [Sinatra](http://www.sinatrarb.com/).
 - Per Wendel, for creating [Spark](http://sparkjava.com/).
