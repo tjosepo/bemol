@@ -16,19 +16,18 @@ namespace Bemol.Http {
     public class Context {
         private readonly IRequest Request;
         private readonly IResponse Response;
-        private readonly BemolRenderer Renderer;
 
         private Form? Form;
         private NameValueCollection? Query;
         internal Dictionary<string, string>? PathParamDict;
+        internal BemolRenderer? Renderer;
 
         private byte[] BodyArray = null!;  // Because byte?[] to byte[] conversion is a pain
         private byte[] ResultArray = null!;  // Because byte?[] to byte[] conversion is a pain
 
-        internal Context(IRequest request, IResponse response, BemolConfig config) {
+        internal Context(IRequest request, IResponse response) {
             Request = request;
             Response = response;
-            Renderer = new BemolRenderer(config);
         }
 
         // ********************************************************************************************
@@ -251,6 +250,6 @@ namespace Bemol.Http {
         /// Renders a Liquid file located in the <c>resources</c> folder with specified values and sets it as the context result.
         /// Also sets content-type to text/html.
         /// </summary>
-        public Context Render(string filePath, object? model = null) => Html(Renderer.Render(filePath, model));
+        public Context Render(string filePath, object? model = null) => Html(Renderer!.Render(filePath, model));
     }
 }

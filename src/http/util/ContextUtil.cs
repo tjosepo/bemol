@@ -1,10 +1,13 @@
 using System.Web;
 using System.Collections.Specialized;
 
+using Bemol.Core;
+
 namespace Bemol.Http.Util {
     internal static class ContextUtil {
         internal static Context Update(Context ctx, HandlerEntry entry) {
             ctx.PathParamDict = entry.ExtractPathParams(ctx.Path());
+            ctx.Renderer = new BemolRenderer(entry.Config);
             return ctx;
         }
 

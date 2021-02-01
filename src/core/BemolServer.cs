@@ -41,7 +41,7 @@ namespace Bemol.Core {
                     new Task(() => {
                         var request = new Bemol.Core.Server.HttpListener.HttpListenerRequest(rawCtx);
                         var response = new Bemol.Core.Server.HttpListener.HttpListenerResponse(rawCtx);
-                        var ctx = new Context(request, response, Config);
+                        var ctx = new Context(request, response);
                         HandleRequest(ctx);
                     }).Start();
                 }
@@ -64,8 +64,8 @@ namespace Bemol.Core {
             SendResponse(ctx);
         }
 
-        internal void AddHandler(string method, string path, Handler handler) {
-            Matcher.Add(new HandlerEntry(method, path, Config.IgnoreTrailingSlashes, handler));
+        internal void AddHandler(string method, string path, Handler handler, RouterConfig config) {
+            Matcher.Add(new HandlerEntry(method, path, handler, config));
         }
 
         internal void AddErrorHandler(int statusCode, Handler handler) {

@@ -6,10 +6,10 @@ using DotLiquid.FileSystems;
 
 namespace Bemol.Core {
     internal class BemolRenderer {
-        private readonly BemolConfig Config;
-        private readonly Dictionary<int, Template> Cache = new Dictionary<int, Template>();
+        private readonly RouterConfig Config;
+        private static readonly Dictionary<int, Template> Cache = new Dictionary<int, Template>();
 
-        internal BemolRenderer(BemolConfig config) {
+        internal BemolRenderer(RouterConfig config) {
             Config = config;
             SetFileSystem();
         }
@@ -21,19 +21,18 @@ namespace Bemol.Core {
         }
 
         private void SetFileSystem() {
-            string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-            string resources = BemolUtil.NormalizePath(Config.ResourcesFolder);
-            string partials = BemolUtil.NormalizePath(Config.PartialsFolder);
             char separator = Path.DirectorySeparatorChar;
-            Template.FileSystem = new LocalFileSystem($"{currentDirectory}{resources}{separator}{partials}");
+            string templateFolder = BemolUtil.NormalizePath(Config.TemplateFolder);
+            string fullPath = Path.GetFullPath($".{separator}{templateFolder}");
+            Template.FileSystem = new LocalFileSystem(fullPath);
         }
 
         private Template GetTemplate(string filePath) {
-            filePath = BemolUtil.NormalizePath(filePath);
-            string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-            string resources = BemolUtil.NormalizePath(Config.ResourcesFolder);
             char separator = Path.DirectorySeparatorChar;
-            string text = File.ReadAllTextAsync($"{currentDirectory}{resources}{separator}{filePath}").Result;
+            string templateFolder = BemolUtil.NormalizePath(Config.TemplateFolder);
+            filePath = BemolUtil.NormalizePath(filePath);
+            string fullPath = Path.GetFullPath($".{separator}{templateFolder}{separator}{filePath}");
+            string text = File.ReadAllTextAsync(fullPath).Result;
             int hash = text.GetHashCode();
             if (!Cache.ContainsKey(hash)) {
                 Cache[hash] = Template.Parse(text);

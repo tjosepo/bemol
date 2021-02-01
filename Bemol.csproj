@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="DotLiquid" Version="2.0.366" />
+    <!-- <ProjectReference Include="../../dotliquid/src/DotLiquid/DotLiquid.csproj" /> -->
     <PackageReference Include="MimeTypeMapOfficial" Version="1.0.14" />
     <PackageReference Include="HttpMultipartParser" Version="5.0.0" />
   </ItemGroup>

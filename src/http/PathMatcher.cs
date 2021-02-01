@@ -8,13 +8,15 @@ namespace Bemol.Http {
         internal readonly string Method;
         internal readonly string Path;
         internal readonly Handler Handle;
+        internal readonly RouterConfig Config;
         private readonly PathParser PathParser;
 
-        internal HandlerEntry(string method, string path, bool ignoreTrailingSlashes, Handler handler) {
+        internal HandlerEntry(string method, string path, Handler handler, RouterConfig config) {
             Method = method;
             Path = path;
             Handle = handler;
-            PathParser = new PathParser(path, ignoreTrailingSlashes);
+            Config = config;
+            PathParser = new PathParser(path, config.IgnoreTrailingSlashes);
         }
 
         internal bool Matches(string requestUri) {

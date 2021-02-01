@@ -45,6 +45,22 @@ namespace Bemol {
             return this;
         }
 
+        /// <summary> Adds a router to the application instance. </summary>
+        public App Use(Router router) {
+            foreach (var (method, path, handler) in router.Routes) {
+                Server.AddHandler(method.ToUpper(), path, handler, router.Config);
+            }
+            return this;
+        }
+
+        /// <summary> Adds a router with the specified path prefix to the application instance. </summary>
+        public App Use(Router router, string prefix) {
+            foreach (var (method, path, handler) in router.Routes) {
+                Server.AddHandler(method.ToUpper(), $"{prefix}/{path}", handler, router.Config);
+            }
+            return this;
+        }
+
         // ********************************************************************************************
         // HTTP
         // ********************************************************************************************
@@ -56,41 +72,41 @@ namespace Bemol {
         }
 
         /// <summary> Adds a custom request handler for the specified method and path to the instance. </summary>
-        public App Custom(string method, string path, Handler handler) {
-            Server.AddHandler(method.ToUpper(), path, handler);
+        public App Route(string method, string path, Handler handler) {
+            Server.AddHandler(method.ToUpper(), path, handler, Config);
             return this;
         }
 
         /// <summary> Adds a GET request handler for the specified path to the instance. </summary>
-        public App Get(string path, Handler handler) => Custom("GET", path, handler);
+        public App Get(string path, Handler handler) => Route("GET", path, handler);
 
         /// <summary> Adds a HEAD request handler for the specified path to the instance. </summary>
-        public App Head(string path, Handler handler) => Custom("HEAD", path, handler);
+        public App Head(string path, Handler handler) => Route("HEAD", path, handler);
 
         /// <summary> Adds a POST request handler for the specified path to the instance. </summary>
-        public App Post(string path, Handler handler) => Custom("POST", path, handler);
+        public App Post(string path, Handler handler) => Route("POST", path, handler);
 
         /// <summary> Adds a PUT request handler for the specified path to the instance. </summary>
-        public App Put(string path, Handler handler) => Custom("PUT", path, handler);
+        public App Put(string path, Handler handler) => Route("PUT", path, handler);
 
         /// <summary> Adds a PATCH request handler for the specified path to the instance. </summary>
-        public App Patch(string path, Handler handler) => Custom("PATCH", path, handler);
+        public App Patch(string path, Handler handler) => Route("PATCH", path, handler);
 
         /// <summary> Adds a DELETE request handler for the specified path to the instance. </summary>
-        public App Delete(string path, Handler handler) => Custom("DELETE", path, handler);
+        public App Delete(string path, Handler handler) => Route("DELETE", path, handler);
 
         // ********************************************************************************************
         // BEFORE / AFTER
         // ********************************************************************************************
 
         /// <summary> Adds a BEFORE request handler for the specified path to the instance. </summary>
-        public App Before(string path, Handler handler) => Custom("BEFORE", path, handler);
+        public App Before(string path, Handler handler) => Route("BEFORE", path, handler);
 
         /// <summary> Adds a BEFORE request handler for all routes in the instance. </summary>
         public App Before(Handler handler) => Before("*", handler);
 
         /// <summary> Adds an AFTER request handler for the specified path to the instance. </summary>
-        public App After(string path, Handler handler) => Custom("AFTER", path, handler);
+        public App After(string path, Handler handler) => Route("AFTER", path, handler);
 
         /// <summary> Adds an AFTER request handler for all routes in the instance. </summary>
         public App After(Handler handler) => After("*", handler);
