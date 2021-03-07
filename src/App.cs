@@ -32,7 +32,7 @@ namespace Bemol {
 
         /// <summary> 
         /// Starts the application instance on the specified port
-        /// with the given host IP to bind to. 
+        /// with the given host IP to bind to.
         /// </summary>
         public App Start(string host, int port) {
             Server.Host = host;
@@ -42,22 +42,6 @@ namespace Bemol {
         /// <summary> Stops the application instance. </summary>
         public App Stop() {
             Server.Started = false;
-            return this;
-        }
-
-        /// <summary> Adds a router to the application instance. </summary>
-        public App Use(Router router) {
-            foreach (var (method, path, handler) in router.Routes) {
-                Server.AddHandler(method.ToUpper(), path, handler, router.Config);
-            }
-            return this;
-        }
-
-        /// <summary> Adds a router with the specified path prefix to the application instance. </summary>
-        public App Use(Router router, string prefix) {
-            foreach (var (method, path, handler) in router.Routes) {
-                Server.AddHandler(method.ToUpper(), $"{prefix}/{path}", handler, router.Config);
-            }
             return this;
         }
 
@@ -96,19 +80,29 @@ namespace Bemol {
         public App Delete(string path, Handler handler) => Route("DELETE", path, handler);
 
         // ********************************************************************************************
-        // BEFORE / AFTER
+        // MIDDLEWARES
         // ********************************************************************************************
 
-        /// <summary> Adds a BEFORE request handler for the specified path to the instance. </summary>
-        public App Before(string path, Handler handler) => Route("BEFORE", path, handler);
+        /// <summary> Adds a middleware for all routes in the instance. </summary>
+        public App Use(Handler handler) => Use("*", handler);
 
-        /// <summary> Adds a BEFORE request handler for all routes in the instance. </summary>
-        public App Before(Handler handler) => Before("*", handler);
+        /// <summary> Adds a middleware for the specified path to the instance. </summary>
+        public App Use(string path, Handler handler) => Route("USE", path, handler);
 
-        /// <summary> Adds an AFTER request handler for the specified path to the instance. </summary>
-        public App After(string path, Handler handler) => Route("AFTER", path, handler);
+        /// <summary> Adds a router to the application instance. </summary>
+        public App Use(Router router) {
+            foreach (var (method, path, handler) in router.Routes) {
+                Server.AddHandler(method.ToUpper(), path, handler, router.Config);
+            }
+            return this;
+        }
 
-        /// <summary> Adds an AFTER request handler for all routes in the instance. </summary>
-        public App After(Handler handler) => After("*", handler);
+        /// <summary> Adds a router with the specified path prefix to the application instance. </summary>
+        public App Use(Router router, string prefix) {
+            foreach (var (method, path, handler) in router.Routes) {
+                Server.AddHandler(method.ToUpper(), $"{prefix}/{path}", handler, router.Config);
+            }
+            return this;
+        }
     }
 }

@@ -38,12 +38,12 @@ namespace Bemol.Core {
 
                 while (Started) {
                     var rawCtx = listener.GetContext();
-                    new Task(() => {
+                    Task.Run(() => {
                         var request = new Bemol.Core.Server.HttpListener.HttpListenerRequest(rawCtx);
                         var response = new Bemol.Core.Server.HttpListener.HttpListenerResponse(rawCtx);
                         var ctx = new Context(request, response);
                         HandleRequest(ctx);
-                    }).Start();
+                    });
                 }
             }).Start();
         }
@@ -51,15 +51,13 @@ namespace Bemol.Core {
         internal void HandleRequest(Context ctx) {
             ctx.ContentType(Config.DefaultContentType);
 
-            TryBeforeHandlers(ctx);
-            TryEndpointHandler(ctx);
-            if (ctx.Status() == 404) {
-                TryStaticFiles(ctx);
-            }
-            TryErrorHandler(ctx);
-            TryAfterHandlers(ctx);
+            TryWithExceptionMapper(ctx, () => {
+                TryMiddlewares(ctx);
+                TryEndpointHandler(ctx);
+            });
 
-            if (Config.EnableCorsForAllOrigins) ctx.Header("Access-Control-Allow-Origin", "*");
+            TryErrorHandler(ctx);
+            TryFinally(ctx);
 
             SendResponse(ctx);
         }
@@ -76,28 +74,25 @@ namespace Bemol.Core {
             ExceptionMapper.CatchException(ctx, func);
         }
 
-        private void TryBeforeHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
-            TryHandlers("BEFORE", ctx);
-        });
+        private void TryMiddlewares(Context ctx) => TryHandlers("USE", ctx);
 
-        private void TryEndpointHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
+
+        private void TryEndpointHandler(Context ctx) {
             var entries = TryHandlers(ctx.Method(), ctx);
-            if (entries == null || entries?.Count == 0) throw new NotFoundException();
-        });
+            if (entries == null || entries?.Count == 0) TryStaticFiles(ctx);
+        }
 
-        private void TryStaticFiles(Context ctx) => TryWithExceptionMapper(ctx, () => {
+        private void TryStaticFiles(Context ctx) {
             if (ctx.Method() == "GET") {
                 StaticFilesHandler.Handle(ctx);
+            } else {
+                ctx.Status(404);
             }
-        });
+        }
 
-        private void TryErrorHandler(Context ctx) => TryWithExceptionMapper(ctx, () => {
+        private void TryErrorHandler(Context ctx) {
             ErrorMapper.Handle(ctx.Status(), ctx);
-        });
-
-        private void TryAfterHandlers(Context ctx) => TryWithExceptionMapper(ctx, () => {
-            TryHandlers("AFTER", ctx);
-        });
+        }
 
         private List<HandlerEntry>? TryHandlers(string method, Context ctx) {
             var entries = Matcher.FindEntries(method, ctx.Path());
@@ -105,6 +100,15 @@ namespace Bemol.Core {
                 entry.Handle(ContextUtil.Update(ctx, entry));
             });
             return entries;
+        }
+
+        private void TryFinally(Context ctx) {
+            while (ctx.Waitlist.Count > 0) {
+                var next = ctx.Waitlist.Pop();
+                TryWithExceptionMapper(ctx, () => {
+                    next.Invoke();
+                });
+            }
         }
 
         private void SendResponse(Context ctx) {

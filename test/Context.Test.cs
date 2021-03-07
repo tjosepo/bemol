@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 using Xunit;
 using Bemol.Test.Fixtures;
+using Bemol.Core;
 using Bemol.Http;
 using Bemol.Http.Exceptions;
 using Bemol.Http.Util;
@@ -133,7 +134,7 @@ namespace Bemol.Test {
         [InlineData("/:name", "name", "/foo", "foo")]
         [InlineData("/:name/settings", "name", "/foo/settings", "foo")]
         public void PathParam_AsString_Equal(string path, string paramName, string requestPath, string result) {
-            var entry = new HandlerEntry("GET", path, true, null);
+            var entry = new HandlerEntry("GET", path, null, new RouterConfig());
             var ctx = Server.GetContext(client => client.GetAsync(requestPath));
             ctx = ContextUtil.Update(ctx, entry);
             Assert.Equal(result, ctx.PathParam(paramName));
@@ -150,7 +151,7 @@ namespace Bemol.Test {
         [InlineData(1)]
         [InlineData(100)]
         public void PathParam_AsInt_Equal(int id) {
-            var entry = new HandlerEntry("GET", "/:id", true, null);
+            var entry = new HandlerEntry("GET", "/:id", null, new RouterConfig());
             var ctx = Server.GetContext(client => client.GetAsync($"/{id}"));
             ctx = ContextUtil.Update(ctx, entry);
             Assert.Equal(id, ctx.PathParam<int>("id"));
@@ -161,7 +162,7 @@ namespace Bemol.Test {
         [InlineData(21.5)]
         [InlineData(100)]
         public void PathParam_AsFloat_Equal(int temperature) {
-            var entry = new HandlerEntry("GET", "/:temperature", true, null);
+            var entry = new HandlerEntry("GET", "/:temperature", null, new RouterConfig());
             var ctx = Server.GetContext(client => client.GetAsync($"/{temperature}"));
             ctx = ContextUtil.Update(ctx, entry);
             Assert.Equal(temperature, ctx.PathParam<float>("temperature"));
@@ -169,7 +170,7 @@ namespace Bemol.Test {
 
         [Fact]
         public void PathParam_AsInt_Throws() {
-            var entry = new HandlerEntry("GET", "/:id", true, null);
+            var entry = new HandlerEntry("GET", "/:id", null, new RouterConfig());
             var ctx = Server.GetContext(client => client.GetAsync($"/foo"));
             ctx = ContextUtil.Update(ctx, entry);
             Assert.Throws<BadRequestException>(() => ctx.PathParam<int>("id"));

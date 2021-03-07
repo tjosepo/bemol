@@ -18,6 +18,7 @@ namespace Bemol.Http {
                 var path = ctx.Path();
                 var target = GetTargetPath(path);
                 if (!File.Exists(target)) {
+                    ctx.Status(404);
                     return;
                 }
 

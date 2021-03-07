@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bemol.Core;
 using Bemol.Http.Util;
@@ -29,6 +31,14 @@ namespace Bemol.Http {
             Request = request;
             Response = response;
         }
+
+        // ********************************************************************************************
+        // NEXT
+        // ********************************************************************************************
+
+        internal Stack<Action> Waitlist = new Stack<Action>();
+
+        public void Finally(Action handler) => Waitlist.Push(handler);
 
         // ********************************************************************************************
         // REQUEST
