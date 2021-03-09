@@ -2,8 +2,8 @@
   "FormattingOptions": {
     "newLine": "\n",
     "useTabs": false,
-    "tabSize": 4,
-    "indentationSize": 4,
+    "tabSize": 2,
+    "indentationSize": 2,
 
     "NewLinesForBracesInTypes": false,
     "NewLinesForBracesInMethods": false,

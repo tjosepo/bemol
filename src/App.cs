@@ -89,20 +89,12 @@ namespace Bemol {
         /// <summary> Adds a middleware for the specified path to the instance. </summary>
         public App Use(string path, Handler handler) => Route("USE", path, handler);
 
-        /// <summary> Adds a router to the application instance. </summary>
-        public App Use(Router router) {
-            foreach (var (method, path, handler) in router.Routes) {
-                Server.AddHandler(method.ToUpper(), path, handler, router.Config);
-            }
-            return this;
-        }
-
-        /// <summary> Adds a router with the specified path prefix to the application instance. </summary>
-        public App Use(Router router, string prefix) {
-            foreach (var (method, path, handler) in router.Routes) {
-                Server.AddHandler(method.ToUpper(), $"{prefix}/{path}", handler, router.Config);
-            }
-            return this;
-        }
+        // /// <summary> Adds a router with the specified path prefix to the application instance. </summary>
+        // public App Use(Router router, string prefix) {
+        //     foreach (var (method, path, handler) in router.Routes) {
+        //         Server.AddHandler(method.ToUpper(), $"{prefix}/{path}", handler, router.Config);
+        //     }
+        //     return this;
+        // }
     }
 }
