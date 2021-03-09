@@ -74,5 +74,11 @@ namespace Bemol.Test.Routing {
       var pathParamDict = ExtractPathParams("/:foo", "/bar");
       Assert.Throws<System.Collections.Generic.KeyNotFoundException>(() => pathParamDict["baz"]);
     }
+
+    [Fact]
+    public void ExtractPathParams_RoutesDontMatch() {
+      var pathParamDict = ExtractPathParams("/foo/:bar", "/baz/baz");
+      Assert.Equal("", pathParamDict["bar"]);
+    }
   }
 }
