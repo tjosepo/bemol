@@ -19,10 +19,7 @@ namespace Bemol.Test {
     [InlineData("Put", "*", "/foo/bar")]
     public void Add_Route_Find(string method, string path, string url) {
       var router = new Router();
-      var route = new Route {
-        Method = method,
-        Path = path
-      };
+      var route = new Route(method, path, null, null);
       router.Add(route);
       var result = router.Find(method, url);
       Assert.Single(result);

@@ -1,20 +1,15 @@
 using Bemol;
 using Bemol.Http;
 
-namespace Wesbite {
-    public class Auth {
-        public Router Router;
+public class Auth : Router {
 
-        public Auth() {
-            Router = new Router(config => {
-                config.TemplateFolder = "/auth/templates";
-            });
+  public Auth() : base(config => {
+    config.TemplateFolder = "auth/templates";
+  }) {
+    Get("/login", ctx => ctx.Render("/login.liquid"));
+    Post("/login", Login);
+  }
 
-            Router.Get("/login", ctx => ctx.Render("/login.liquid"));
-            Router.Post("/login", Login);
-        }
-
-        private void Login(Context ctx) {
-        }
-    }
+  private void Login(Context ctx) {
+  }
 }

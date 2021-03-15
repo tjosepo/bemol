@@ -3,22 +3,22 @@ using System;
 using Bemol.Http;
 
 namespace Bemol.Middlewares {
-    public class Cors {
-        public static Handler New() => New(new Config());
+  public class Cors : Router {
+    private CorsConfig Config = new CorsConfig();
 
-        public static Handler New(Action<Config> configure) {
-            Config config = new Config();
-            configure(config);
-            return New(config);
-        }
+    public Cors(Action<CorsConfig> config) : this() => config.Invoke(Config);
 
-        public static Handler New(Config config) => new Handler(ctx => {
-            ctx.Header("Access-Control-Allow-Origin", config.AllowOrigins);
-        });
-
-        public class Config {
-            /// <summary> Defines a list of origins that may access the resource. </summary>
-            public string AllowOrigins = "*";
-        }
+    public Cors() {
+      Before(SetCorsPolicy);
     }
+
+    private void SetCorsPolicy(Context ctx) {
+      ctx.Header("Access-Control-Allow-Origin", Config.AllowOrigins);
+    }
+
+    public class CorsConfig {
+      /// <summary> Defines a list of origins that may access the resource. </summary>
+      public string AllowOrigins = "*";
+    }
+  }
 }
