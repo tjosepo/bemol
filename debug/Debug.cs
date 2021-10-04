@@ -3,17 +3,10 @@ using Bemol.Middlewares;
 
 App app = new App().Start();
 
-app.Get("/", ctx => {
-  ctx.Render("index.liquid");
-});
-app.Post("/", ctx => ctx.Render("index.liquid"));
-app.Add("auth", new Auth());
+Router router = new Router();
 
-app.Add(new Logger());
-app.Add(new Cors());
-
-
-app.Post("/", ctx => {
-  var file = ctx.UploadedFile("file");
+router.Get("/hello", (ctx) => {
+  ctx.Result("Hello world!");
 });
 
+app.Add(router);

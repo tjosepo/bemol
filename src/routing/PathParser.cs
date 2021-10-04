@@ -5,6 +5,17 @@ using System.Text.RegularExpressions;
 
 namespace Bemol.Routing {
   internal static class PathParser {
+    internal static (string?, string?) Cons(string? path) {
+      var segments = path?.Split('/')
+        .Where(segment => segment.Length > 0);
+
+      var head = segments?.FirstOrDefault();
+      var tail = segments?.Skip(1)
+        .DefaultIfEmpty<string?>(null)
+        .Aggregate((a, b) => a + '/' + b);
+      return (head, tail);
+    }
+
     internal static bool Matches(string route, string path, bool ignoreTrailingSlash = true) {
       if (route == "*") return true;
       if (route == path) return true;
@@ -32,7 +43,7 @@ namespace Bemol.Routing {
     private static string GetPattern(string route, IEnumerable<PathSegment> segments, bool ignoreTrailingSlash) {
       var segmentsRegex = segments.Select(segment => segment.AsRegexString());
       var suffixRegex = (ignoreTrailingSlash) ? "/?" : (route.EndsWith("/")) ? "/" : "";
-      return $"^/{String.Join('/', segmentsRegex)}{suffixRegex}$";
+      return $"^/?{String.Join('/', segmentsRegex)}{suffixRegex}$";
     }
 
     internal static Dictionary<string, string> ExtractPathParams(string route, string path) {

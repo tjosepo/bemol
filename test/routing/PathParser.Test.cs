@@ -6,7 +6,7 @@ namespace Bemol.Test.Routing {
 
     [Fact]
     public void Matches_Normal_FindsMatch() {
-      Assert.True(Matches("/foo", "/foo"));
+      Assert.True(Matches("/foo", "/foo/"));
     }
 
     [Fact]
@@ -79,6 +79,25 @@ namespace Bemol.Test.Routing {
     public void ExtractPathParams_RoutesDontMatch() {
       var pathParamDict = ExtractPathParams("/foo/:bar", "/baz/baz");
       Assert.Equal("", pathParamDict["bar"]);
+    }
+
+    [Theory]
+    [InlineData(null, null, null)]
+    [InlineData("/", null, null)]
+    [InlineData("/hello", "hello", null)]
+    [InlineData("/hello/", "hello", null)]
+    [InlineData("hello", "hello", null)]
+    [InlineData("/hello/world", "hello", "world")]
+    [InlineData("/hello/world/", "hello", "world")]
+    [InlineData("///hello//darkness//my//old///friend", "hello", "darkness/my/old/friend")]
+    [InlineData("*", "*", null)]
+    [InlineData("/*/blog", "*", "blog")]
+    [InlineData("/:id/profile", ":id", "profile")]
+    public void Cons_ExtractHeadAndTail(string path, string expectedHead, string expectedTail) {
+      var (head, tail) = Cons(path);
+
+      Assert.Equal(expectedHead, head);
+      Assert.Equal(expectedTail, tail);
     }
   }
 }

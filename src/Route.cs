@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using Bemol.Http;
 using Bemol.Routing;
 
 namespace Bemol {
